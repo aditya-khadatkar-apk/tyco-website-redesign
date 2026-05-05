@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @theme {
   --color-industrial-100: #f5f7f9;
@@ -10,8 +11,9 @@
   --color-industrial-700: #334155;
   --color-industrial-800: #1e293b;
   --color-industrial-900: #0f172a;
-  
-  --color-primary-500: #ea580c; /* Safety Orange for industrial accent */
+
+  --color-primary-500: #ea580c;
+  /* Safety Orange for industrial accent */
   --color-primary-600: #c2410c;
 
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
@@ -23,8 +25,119 @@
     @apply bg-industrial-100 text-industrial-900 font-sans antialiased;
     margin: 0;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-heading tracking-tight font-semibold text-industrial-800;
   }
+}
+
+@layer utilities {
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ── Rich Text / Callout Box Styles ─────────────────────────── */
+/* These render on both admin editor and public-facing prose blocks */
+.callout-box,
+.prose .callout-box,
+.prose div[data-callout] {
+  border-left: 4px solid;
+  padding: 0.85rem 1.15rem;
+  margin: 1.25rem 0;
+  border-radius: 0.5rem;
+  font-size: 0.95em;
+  line-height: 1.65;
+}
+
+.callout-info,
+.prose .callout-info,
+.prose div[data-callout-type="info"] {
+  border-color: #60a5fa;
+  background-color: #eff6ff;
+  color: #1e40af;
+}
+
+.callout-success,
+.prose .callout-success,
+.prose div[data-callout-type="success"] {
+  border-color: #4ade80;
+  background-color: #f0fdf4;
+  color: #166534;
+}
+
+.callout-warning,
+.prose .callout-warning,
+.prose div[data-callout-type="warning"] {
+  border-color: #fbbf24;
+  background-color: #fffbeb;
+  color: #92400e;
+}
+
+.callout-danger,
+.prose .callout-danger,
+.prose div[data-callout-type="danger"] {
+  border-color: #f87171;
+  background-color: #fef2f2;
+  color: #991b1b;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-primary-500 bg-industrial-100 py-2 px-6 rounded-r-lg italic text-industrial-600;
+  quotes: none;
+}
+
+.prose blockquote p {
+  @apply text-left m-0;
+}
+
+.prose blockquote p::before,
+.prose blockquote p::after {
+  content: none;
+}
+
+.prose h2,
+.prose h3 {
+  @apply mt-10 mb-4 font-heading font-bold text-industrial-900 border-b border-industrial-200 pb-2;
+}
+
+.prose p {
+  @apply mb-2 last:mb-0;
+}
+
+.prose ul,
+.prose ol {
+  @apply my-6 space-y-2;
+}
+
+.prose li {
+  @apply pl-2;
+}
+
+.prose strong {
+  @apply text-industrial-900 font-semibold;
+}
+
+.prose mark {
+  @apply rounded-[0.15em] px-[0.2em] py-[0.05em];
+}
+
+.prose a {
+  @apply text-blue-600 underline underline-offset-2;
+}
+
+.prose a:hover {
+  @apply text-blue-800;
 }

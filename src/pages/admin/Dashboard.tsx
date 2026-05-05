@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
 
   return (
     <div>
@@ -21,11 +21,13 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-industrial-200">
-          <h3 className="text-lg font-semibold text-industrial-900 mb-2">Pages CMS</h3>
-          <p className="text-industrial-600 text-sm mb-4">Edit content for Home, Company Profile, and Contact Us pages.</p>
-          <a href="/admin/pages" className="text-primary-600 font-medium hover:text-primary-700 text-sm">Manage Pages &rarr;</a>
-        </div>
+        {(role === 'super-admin' || role === 'admin') && (
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-industrial-200">
+            <h3 className="text-lg font-semibold text-industrial-900 mb-2">Pages CMS</h3>
+            <p className="text-industrial-600 text-sm mb-4">Edit content for Home, Company Profile, and Contact Us pages.</p>
+            <a href="/admin/pages" className="text-primary-600 font-medium hover:text-primary-700 text-sm">Manage Pages &rarr;</a>
+          </div>
+        )}
 
         <div className="bg-white p-6 rounded-xl shadow-sm border border-industrial-200">
           <h3 className="text-lg font-semibold text-industrial-900 mb-2">Product Catalog</h3>
@@ -33,11 +35,21 @@ export default function Dashboard() {
           <a href="/admin/products" className="text-primary-600 font-medium hover:text-primary-700 text-sm">Manage Products &rarr;</a>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-industrial-200">
-          <h3 className="text-lg font-semibold text-industrial-900 mb-2">Global Settings</h3>
-          <p className="text-industrial-600 text-sm mb-4">Update contact information and social media links.</p>
-          <a href="/admin/settings" className="text-primary-600 font-medium hover:text-primary-700 text-sm">Manage Settings &rarr;</a>
-        </div>
+        {(role === 'super-admin' || role === 'admin') && (
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-industrial-200">
+            <h3 className="text-lg font-semibold text-industrial-900 mb-2">User Management</h3>
+            <p className="text-industrial-600 text-sm mb-4">Invite and manage {role === 'super-admin' ? 'administrators and users' : 'new users'}.</p>
+            <a href="/admin/users" className="text-primary-600 font-medium hover:text-primary-700 text-sm">Manage Users &rarr;</a>
+          </div>
+        )}
+
+        {role === 'super-admin' && (
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-industrial-200">
+            <h3 className="text-lg font-semibold text-industrial-900 mb-2">Global Settings</h3>
+            <p className="text-industrial-600 text-sm mb-4">Update contact information and social media links.</p>
+            <a href="/admin/settings" className="text-primary-600 font-medium hover:text-primary-700 text-sm">Manage Settings &rarr;</a>
+          </div>
+        )}
       </div>
     </div>
   );

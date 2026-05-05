@@ -20,7 +20,7 @@ export default function ProtectedRoute({ requireAdmin = false }: ProtectedRouteP
     return <Navigate to="/admin/login" replace />;
   }
 
-  if (requireAdmin && role !== 'admin' && role !== 'super-admin') {
+  if (requireAdmin && role !== 'admin' && role !== 'super-admin' && role !== 'user') {
     // If they are logged in but not an admin, we might want to show an unauthorized page or redirect
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-industrial-100 p-4 text-center">

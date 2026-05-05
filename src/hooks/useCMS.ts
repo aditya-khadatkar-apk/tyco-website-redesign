@@ -1,0 +1,43 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '../lib/supabase';
+
+export function useCMS(slug: string, initialData: any = {}) {
+  const [content, setContent] = useState<any>(initialData);
+  const [loading, setLoading] = useState(true);
+
+  const fetchContent = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('pages')
+        .select('content')
+        .eq('slug', slug)
+        .maybeSingle();
+
+      if (error) {
+        console.error(`[CMS] Error fetching "${slug}":`, error.message);
+      }
+
+      if (data?.content) {
+        // DB values take precedence over defaults
+        setContent({ ...initialData, ...data.content });
+      } else {
+        // No row in DB yet — use defaults
+        setContent(initialData);
+      }
+    } catch (err) {
+      console.error('[CMS] Unexpected error:', err);
+      setContent(initialData);
+    } finally {
+      setLoading(false);
+    }
+    // initialData is a static default object, no need to track
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug]);
+
+  useEffect(() => {
+    fetchContent();
+  }, [fetchContent]);
+
+  return { content, loading };
+}

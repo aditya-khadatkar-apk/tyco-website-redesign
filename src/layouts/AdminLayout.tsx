@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LogOut, LayoutDashboard, FileText, Box, Settings } from 'lucide-react';
+import { LogOut, LayoutDashboard, FileText, Box, Settings, Users as UsersIcon } from 'lucide-react';
 
 export default function AdminLayout() {
   const { signOut, user, role } = useAuth();
@@ -8,10 +8,13 @@ export default function AdminLayout() {
 
   const navItems = [
     { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
-    { name: 'Pages CMS', path: '/admin/pages', icon: FileText },
-    { name: 'Products', path: '/admin/products', icon: Box },
-    { name: 'Settings', path: '/admin/settings', icon: Settings },
+    { name: 'Pages CMS', path: '/admin/pages', icon: FileText, roles: ['super-admin', 'admin'] },
+    { name: 'Products', path: '/admin/products', icon: Box, roles: ['super-admin', 'admin', 'user'] },
+    { name: 'Users', path: '/admin/users', icon: UsersIcon, roles: ['super-admin', 'admin'] },
+    { name: 'Settings', path: '/admin/settings', icon: Settings, roles: ['super-admin', 'admin'] },
   ];
+
+  const filteredNavItems = navItems.filter(item => !item.roles || item.roles.includes(role || ''));
 
   return (
     <div className="min-h-screen bg-industrial-100 flex flex-col md:flex-row font-sans">
@@ -33,7 +36,7 @@ export default function AdminLayout() {
           </div>
 
           <nav className="space-y-1">
-            {navItems.map((item) => {
+            {filteredNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path || (item.path !== '/admin' && location.pathname.startsWith(item.path));
               return (

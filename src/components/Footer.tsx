@@ -19,7 +19,7 @@ export default function Footer() {
               <li><Link to="/company-profile" className="hover:text-primary-400 transition-colors">Company Profile</Link></li>
               <li><Link to="/products" className="hover:text-primary-400 transition-colors">Our Products</Link></li>
               <li><Link to="/contact-us" className="hover:text-primary-400 transition-colors">Contact Us</Link></li>
-              <li><Link to="/admin" className="hover:text-primary-400 transition-colors">Admin Portal</Link></li>
+              <li><Link to="/admin" target="_blank" rel="noopener noreferrer" className="hover:text-primary-400 transition-colors">Admin Portal</Link></li>
             </ul>
           </div>
           <div>
