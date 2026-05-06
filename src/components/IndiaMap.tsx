@@ -5,10 +5,11 @@ import { INDIA_STATES } from '../data/indiaMapData';
 // Some CMS IDs use different codes than the svg-maps/india package
 const CMS_TO_SVG: Record<string, string> = {
   cg: 'ct',  // Chhattisgarh
-  or: 'or',  // Odisha (same in both, but svg uses 'or')
+  or: 'or',  // Odisha
   ts: 'tg',  // Telangana
   ne: 'ar',  // "North East" maps to Arunachal Pradesh
   as: 'as',
+  uk: 'ut',  // Uttarakhand (CMS uses 'uk', SVG uses 'ut')
   // All others: same ID
 };
 
@@ -108,13 +109,25 @@ export default function IndiaMap({ statePresence, title }: IndiaMapProps) {
           })}
         </svg>
 
-        {/* Tooltip */}
+        {/* Tooltip — uses inline styles to stay readable in both light & dark mode */}
         {hoveredState && (
-          <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-industrial-200 px-4 py-3 pointer-events-none z-10 animate-in fade-in duration-150">
-            <p className="font-semibold text-industrial-900 text-sm">
+          <div
+            className="absolute top-4 right-4 rounded-xl shadow-xl px-4 py-3 pointer-events-none z-10"
+            style={{
+              background: 'rgba(255,255,255,0.97)',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid #e2e8f0',
+            }}
+          >
+            <p style={{ color: '#0f172a', fontWeight: 600, fontSize: '0.875rem', margin: 0 }}>
               {hoveredState.name}
             </p>
-            <p className={`text-xs mt-0.5 ${svgPresence[hoveredState.id] ? 'text-primary-600 font-medium' : 'text-industrial-400'}`}>
+            <p style={{
+              color: svgPresence[hoveredState.id] ? '#c2410c' : '#94a3b8',
+              fontSize: '0.75rem',
+              marginTop: '2px',
+              fontWeight: svgPresence[hoveredState.id] ? 500 : 400,
+            }}>
               {svgPresence[hoveredState.id] ? '● Active client presence' : '○ No clients listed'}
             </p>
           </div>
