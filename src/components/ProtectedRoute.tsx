@@ -6,7 +6,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ requireAdmin = false }: ProtectedRouteProps) {
-  const { user, role, loading } = useAuth();
+  const { user, role, mustChangePassword, loading } = useAuth();
 
   if (loading) {
     return (
@@ -18,6 +18,11 @@ export default function ProtectedRoute({ requireAdmin = false }: ProtectedRouteP
 
   if (!user) {
     return <Navigate to="/admin/login" replace />;
+  }
+
+  // Mandatory password change check
+  if (mustChangePassword && window.location.pathname !== '/admin/change-password') {
+    return <Navigate to="/admin/change-password" replace />;
   }
 
   if (requireAdmin && role !== 'admin' && role !== 'super-admin' && role !== 'user') {

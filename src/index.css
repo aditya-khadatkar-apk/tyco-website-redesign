@@ -1,9 +1,11 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-industrial-100: #f5f7f9;
-  --color-industrial-200: #e4e9ed;
+  --color-industrial-50: #f8fafc;
+  --color-industrial-100: #f1f5f9;
+  --color-industrial-200: #e2e8f0;
   --color-industrial-300: #cbd5e1;
   --color-industrial-400: #94a3b8;
   --color-industrial-500: #64748b;
@@ -11,28 +13,38 @@
   --color-industrial-700: #334155;
   --color-industrial-800: #1e293b;
   --color-industrial-900: #0f172a;
+  --color-industrial-950: #020617;
 
   --color-primary-500: #ea580c;
-  /* Safety Orange for industrial accent */
   --color-primary-600: #c2410c;
+  --color-primary-700: #9a3412;
 
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-heading: 'Outfit', system-ui, -apple-system, sans-serif;
 }
 
 @layer base {
-  body {
+  html {
     @apply bg-industrial-100 text-industrial-900 font-sans antialiased;
-    margin: 0;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
+  html.dark {
+    @apply bg-industrial-950 text-industrial-100;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
     @apply font-heading tracking-tight font-semibold text-industrial-800;
+    transition: color 0.3s ease;
+  }
+
+  html.dark h1,
+  html.dark h2,
+  html.dark h3,
+  html.dark h4,
+  html.dark h5,
+  html.dark h6 {
+    @apply text-white;
   }
 }
 
@@ -141,3 +153,47 @@
 .prose a:hover {
   @apply text-blue-800;
 }
+/* ── Global Dark Mode Overrides ──────────────────────────────── */
+/* Covers the whole site so individual components don't need      */
+/* dark: variants on every single element.                        */
+
+html.dark .bg-white { background-color: #1e293b !important; }
+html.dark .bg-industrial-50,
+html.dark .bg-industrial-100 { background-color: #0f172a !important; }
+html.dark .bg-industrial-200 { background-color: #1e293b !important; }
+
+html.dark .border-industrial-100,
+html.dark .border-industrial-200 { border-color: #334155 !important; }
+html.dark .border-industrial-300 { border-color: #475569 !important; }
+
+html.dark .text-industrial-900 { color: #f1f5f9 !important; }
+html.dark .text-industrial-800 { color: #e2e8f0 !important; }
+html.dark .text-industrial-700 { color: #cbd5e1 !important; }
+html.dark .text-industrial-600 { color: #94a3b8 !important; }
+html.dark .text-industrial-500 { color: #64748b !important; }
+
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: #1e293b;
+  color: #f1f5f9;
+  border-color: #334155;
+}
+html.dark input::placeholder,
+html.dark textarea::placeholder { color: #64748b; }
+
+html.dark table { background-color: #1e293b; color: #cbd5e1; }
+html.dark td, html.dark th { border-color: #334155; }
+
+html.dark .prose { color: #94a3b8; }
+html.dark .prose h2, html.dark .prose h3 { color: #f1f5f9; border-color: #334155; }
+html.dark .prose strong { color: #e2e8f0; }
+html.dark .prose blockquote { background-color: #1e293b; color: #94a3b8; }
+
+html.dark .callout-info    { background-color: #1e3a5f; color: #93c5fd; }
+html.dark .callout-success { background-color: #14532d; color: #86efac; }
+html.dark .callout-warning { background-color: #78350f; color: #fcd34d; }
+html.dark .callout-danger  { background-color: #7f1d1d; color: #fca5a5; }
+
+/* Reset */
+body { margin: 0; }

@@ -79,7 +79,10 @@ serve(async (req: Request) => {
 
     const { error: updateError } = await supabaseAdmin
       .from('profiles')
-      .update({ role })
+      .update({ 
+        role,
+        must_change_password: true 
+      })
       .eq('id', newUser.user.id);
 
     if (updateError) throw updateError;

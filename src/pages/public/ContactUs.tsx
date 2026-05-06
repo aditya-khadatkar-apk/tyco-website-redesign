@@ -1,16 +1,26 @@
 import { Helmet } from 'react-helmet-async';
 import { Mail, Phone, MapPin, Send, Loader2, ChevronDown } from 'lucide-react';
 import { useCMS } from '../../hooks/useCMS';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export default function ContactUs() {
   const { content, loading: cmsLoading } = useCMS('contact-us');
+  const [searchParams] = useSearchParams();
+  const prefillProduct = searchParams.get('product');
 
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState('');
+
+  useEffect(() => {
+    if (prefillProduct) {
+      setSelectedProduct(prefillProduct);
+    }
+  }, [prefillProduct]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -227,7 +237,8 @@ export default function ContactUs() {
                         required 
                         id="subject" 
                         name="subject" 
-                        defaultValue=""
+                        value={selectedProduct}
+                        onChange={(e) => setSelectedProduct(e.target.value)}
                         className="w-full px-4 py-3 bg-industrial-50 border border-industrial-200 rounded-lg focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none appearance-none text-industrial-900 transition-all cursor-pointer text-sm"
                       >
                         <option value="" disabled>Select a product or service</option>

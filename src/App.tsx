@@ -8,6 +8,8 @@ import CompanyProfile from './pages/public/CompanyProfile';
 import Products from './pages/public/Products';
 import Clients from './pages/public/Clients';
 import ContactUs from './pages/public/ContactUs';
+import { ThemeProvider } from './contexts/ThemeContext';
+import ProductDetails from './pages/public/ProductDetails';
 
 import Login from './pages/admin/Login';
 import Dashboard from './pages/admin/Dashboard';
@@ -15,26 +17,32 @@ import PagesCMS from './pages/admin/PagesCMS';
 import Users from './pages/admin/Users';
 import ProductsManager from './pages/admin/ProductsManager';
 import ProductEditor from './pages/admin/ProductEditor';
+import ChangePassword from './pages/admin/ChangePassword';
+import ForgotPassword from './pages/admin/ForgotPassword';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         {/* Public Routes with Layout */}
-        <Route element={<PublicLayout />}>
+        <Route element={<ThemeProvider storageKey="public-theme"><PublicLayout /></ThemeProvider>}>
           <Route path="/" element={<Home />} />
           <Route path="/company-profile" element={<CompanyProfile />} />
           <Route path="/products" element={<Products />} />
+          <Route path="/products/:slug" element={<ProductDetails />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/contact-us" element={<ContactUs />} />
         </Route>
         
-        {/* Admin Login Route (No Layout) */}
+        {/* Admin Login Routes */}
         <Route path="/admin/login" element={<Login />} />
+        <Route path="/admin/forgot-password" element={<ForgotPassword />} />
 
         {/* Secure Admin Routes */}
         <Route element={<ProtectedRoute requireAdmin={true} />}>
-          <Route path="/admin" element={<AdminLayout />}>
+          <Route path="/admin/change-password" element={<ChangePassword />} />
+          {/* Admin Routes */}
+          <Route path="/admin" element={<ThemeProvider storageKey="admin-theme"><AdminLayout /></ThemeProvider>}>
             <Route index element={<Dashboard />} />
             <Route path="pages" element={<PagesCMS />} />
             <Route path="users" element={<Users />} />

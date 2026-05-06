@@ -17,8 +17,11 @@ export default function ProductEditor() {
 
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
+  const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [catalogueUrl, setCatalogueUrl] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
   const [specs, setSpecs] = useState<{ key: string, value: string }[]>([]);
 
   useEffect(() => {
@@ -39,8 +42,11 @@ export default function ProductEditor() {
       
       setName(data.name || '');
       setSlug(data.slug || '');
+      setCategory(data.category || '');
       setDescription(data.description || '');
       setImageUrl(data.image_url || '');
+      setCatalogueUrl(data.catalogue_url || '');
+      setVideoUrl(data.video_url || '');
       
       // Convert JSON specs to array format for editor
       if (data.specs) {
@@ -104,8 +110,11 @@ export default function ProductEditor() {
     const payload = {
       name,
       slug,
+      category,
       description,
       image_url: imageUrl,
+      catalogue_url: catalogueUrl,
+      video_url: videoUrl,
       specs: specsJson,
     };
 
@@ -200,6 +209,40 @@ export default function ProductEditor() {
                     onChange={(e) => setSlug(generateSlug(e.target.value))}
                     className="flex-1 px-4 py-2 border border-industrial-300 rounded-r-md focus:ring-primary-500 focus:border-primary-500 outline-none"
                     placeholder="heavy-duty-pulveriser"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-industrial-700 mb-1">Category</label>
+                <input 
+                  type="text" 
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full px-4 py-2 border border-industrial-300 rounded-md focus:ring-primary-500 focus:border-primary-500 outline-none"
+                  placeholder="e.g. Pulverisers"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-industrial-700 mb-1">Catalogue URL (PDF)</label>
+                  <input 
+                    type="text" 
+                    value={catalogueUrl}
+                    onChange={(e) => setCatalogueUrl(e.target.value)}
+                    className="w-full px-4 py-2 border border-industrial-300 rounded-md focus:ring-primary-500 focus:border-primary-500 outline-none"
+                    placeholder="https://..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-industrial-700 mb-1">Video URL (YouTube)</label>
+                  <input 
+                    type="text" 
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                    className="w-full px-4 py-2 border border-industrial-300 rounded-md focus:ring-primary-500 focus:border-primary-500 outline-none"
+                    placeholder="https://youtube.com/..."
                   />
                 </div>
               </div>

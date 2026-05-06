@@ -1,6 +1,7 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LogOut, LayoutDashboard, FileText, Box, Settings, Users as UsersIcon } from 'lucide-react';
+import { LogOut, LayoutDashboard, FileText, Box, Settings, Users as UsersIcon, Lock } from 'lucide-react';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function AdminLayout() {
   const { signOut, user, role } = useAuth();
@@ -12,14 +13,15 @@ export default function AdminLayout() {
     { name: 'Products', path: '/admin/products', icon: Box, roles: ['super-admin', 'admin', 'user'] },
     { name: 'Users', path: '/admin/users', icon: UsersIcon, roles: ['super-admin', 'admin'] },
     { name: 'Settings', path: '/admin/settings', icon: Settings, roles: ['super-admin', 'admin'] },
+    { name: 'Change Password', path: '/admin/change-password', icon: Lock, roles: ['super-admin', 'admin', 'user'] },
   ];
 
   const filteredNavItems = navItems.filter(item => !item.roles || item.roles.includes(role || ''));
 
   return (
-    <div className="min-h-screen bg-industrial-100 flex flex-col md:flex-row font-sans">
+    <div className="min-h-screen bg-industrial-100 dark:bg-industrial-900 flex flex-col md:flex-row font-sans transition-colors duration-300">
       {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-industrial-900 text-white flex flex-col">
+      <aside className="w-full md:w-64 bg-industrial-900 dark:bg-black text-white flex flex-col border-r border-industrial-800 transition-colors duration-300">
         <div className="p-6 flex items-center justify-center border-b border-industrial-800">
           <Link to="/" className="text-xl font-heading font-bold tracking-tight text-white hover:text-primary-500 transition-colors">
             TYCO <span className="text-primary-500">ADMIN</span>
@@ -45,7 +47,7 @@ export default function AdminLayout() {
                   to={item.path}
                   className={`flex items-center px-4 py-3 rounded-md transition-colors ${
                     isActive 
-                      ? 'bg-primary-600 text-white' 
+                      ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/20' 
                       : 'text-industrial-300 hover:bg-industrial-800 hover:text-white'
                   }`}
                 >
@@ -57,7 +59,11 @@ export default function AdminLayout() {
           </nav>
         </div>
 
-        <div className="mt-auto p-4 border-t border-industrial-800">
+        <div className="mt-auto p-4 border-t border-industrial-800 space-y-2">
+          <div className="px-4 py-2 flex items-center justify-between bg-industrial-800/50 rounded-lg">
+            <span className="text-xs font-medium text-industrial-400">Theme</span>
+            <ThemeToggle className="scale-75" />
+          </div>
           <button
             onClick={signOut}
             className="flex items-center w-full px-4 py-2 text-industrial-300 hover:text-white hover:bg-industrial-800 rounded-md transition-colors"
