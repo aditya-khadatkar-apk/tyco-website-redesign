@@ -29,7 +29,7 @@ interface Profile {
 }
 
 export default function Settings() {
-  const { role, user: currentUser } = useAuth();
+  const { role, user: currentUser, session } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('security');
   
   // Access Control State
@@ -109,8 +109,16 @@ export default function Settings() {
 
     setActionLoading(targetUser.id);
     try {
+      const token = session?.access_token;
+      if (!token) {
+        throw new Error('Authentication session expired. Please log out and back in.');
+      }
+
       const { error } = await supabase.functions.invoke('revoke-session', {
-        body: { userId: targetUser.id, action }
+        body: { userId: targetUser.id, action },
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
 
       if (error) throw error;

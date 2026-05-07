@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'Authorization, x-client-info, apikey, content-type',
 };
 
 serve(async (req: Request) => {
@@ -30,10 +30,17 @@ serve(async (req: Request) => {
     // Verify caller's role
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) throw new Error('Missing Authorization header');
-    const token = authHeader.replace('Bearer ', '');
+    const token = authHeader.replace('Bearer ', '').trim();
+    
+    if (!token || token === 'undefined' || token === 'null') {
+      throw new Error('Invalid or malformed Bearer token');
+    }
     
     const { data: { user: caller }, error: authError } = await supabaseClient.auth.getUser(token);
-    if (authError || !caller) throw new Error('Unauthorized');
+    if (authError || !caller) {
+      console.error('Auth Error:', authError);
+      throw new Error(`Unauthorized: ${authError?.message || 'Token verification failed'}`);
+    }
 
     const { data: callerProfile } = await supabaseClient
       .from('profiles')
