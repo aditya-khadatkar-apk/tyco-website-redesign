@@ -5,11 +5,13 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Lock, Mail, AlertCircle } from 'lucide-react';
 
 export default function Login() {
-  const { user, loading } = useAuth();
+  const { user, loading, error: authError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const displayError = localError || authError;
 
   // If already logged in, redirect to admin dashboard
   if (!loading && user) {
@@ -18,7 +20,7 @@ export default function Login() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setLocalError(null);
     setIsSubmitting(true);
 
     try {
@@ -29,7 +31,7 @@ export default function Login() {
 
       if (error) throw error;
     } catch (err: any) {
-      setError(err.message || 'Failed to sign in');
+      setLocalError(err.message || 'Failed to sign in');
     } finally {
       setIsSubmitting(false);
     }
@@ -49,10 +51,10 @@ export default function Login() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-industrial-200">
           <form className="space-y-6" onSubmit={handleLogin}>
-            {error && (
+            {displayError && (
               <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md flex items-start text-sm">
                 <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
-                <span>{error}</span>
+                <span>{displayError}</span>
               </div>
             )}
 

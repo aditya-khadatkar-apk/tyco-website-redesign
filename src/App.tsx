@@ -19,6 +19,7 @@ import ProductsManager from './pages/admin/ProductsManager';
 import ProductEditor from './pages/admin/ProductEditor';
 import ChangePassword from './pages/admin/ChangePassword';
 import ForgotPassword from './pages/admin/ForgotPassword';
+import Settings from './pages/admin/Settings';
 
 function App() {
   return (
@@ -49,7 +50,7 @@ function App() {
             <Route path="products" element={<ProductsManager />} />
             <Route path="products/new" element={<ProductEditor />} />
             <Route path="products/edit/:id" element={<ProductEditor />} />
-            {/* We will add more admin routes here later: settings */}
+            <Route path="settings" element={<Settings />} />
           </Route>
         </Route>
       </Routes>

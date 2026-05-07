@@ -61,6 +61,17 @@ serve(async (req: Request) => {
 
     // Send email via SendGrid
     console.log('Attempting to send email via SendGrid...');
+
+    // Fetch sender details from settings table
+    const { data: settings } = await supabaseAdmin
+      .from('settings')
+      .select('key, value')
+      .in('key', ['sender_email', 'sender_name']);
+
+    const settingsMap = Object.fromEntries(settings?.map(s => [s.key, s.value]) || []);
+    const fromEmail = settingsMap.sender_email || Deno.env.get('SENDER_EMAIL') || 'adityakhadatkar.apk@gmail.com';
+    const fromName = settingsMap.sender_name || 'Tyco India Admin';
+
     const sgResponse = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
       headers: {
@@ -70,8 +81,8 @@ serve(async (req: Request) => {
       body: JSON.stringify({
         personalizations: [{ to: [{ email }] }],
         from: {
-          email: 'adityakhadatkar.apk@gmail.com', // Update with verified sender
-          name: 'Tyco India Admin',
+          email: fromEmail,
+          name: fromName,
         },
         subject: 'Reset Your Tyco India Admin Password',
         content: [

@@ -8,6 +8,8 @@ interface Profile {
   id: string;
   email: string;
   role: string;
+  first_name: string;
+  last_name: string;
   created_at: string;
 }
 
@@ -17,6 +19,8 @@ export default function Users() {
   const [loading, setLoading] = useState(true);
   const [inviting, setInviting] = useState(false);
   const [email, setEmail] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [newRole, setNewRole] = useState('user');
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
@@ -52,15 +56,17 @@ export default function Users() {
     try {
       // Call our custom edge function
       const { error } = await supabase.functions.invoke('create-user', {
-        body: { email, role: newRole },
+        body: { email, role: newRole, firstName, lastName },
       });
 
       if (error) {
         throw new Error(error.message || 'Failed to create user');
       }
 
-      setMessage({ type: 'success', text: `User ${email} created successfully. An email with their temporary password has been sent.` });
+      setMessage({ type: 'success', text: `User ${firstName} ${lastName} created successfully. An email with their temporary password has been sent.` });
       setEmail('');
+      setFirstName('');
+      setLastName('');
       setNewRole('user');
       fetchUsers(); // Refresh the list
     } catch (err: any) {
@@ -108,6 +114,30 @@ export default function Users() {
             )}
 
             <form onSubmit={handleCreateUser} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-industrial-700 mb-1">First Name</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="w-full px-4 py-2 border border-industrial-300 rounded-md focus:ring-primary-500 focus:border-primary-500 outline-none"
+                    placeholder="Aditya"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-industrial-700 mb-1">Last Name</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="w-full px-4 py-2 border border-industrial-300 rounded-md focus:ring-primary-500 focus:border-primary-500 outline-none"
+                    placeholder="Khadatkar"
+                  />
+                </div>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-industrial-700 mb-1">Email Address</label>
                 <input 
@@ -167,7 +197,7 @@ export default function Users() {
                 <table className="w-full text-left text-sm text-industrial-600">
                   <thead className="bg-industrial-50 text-xs uppercase text-industrial-500 font-semibold border-b border-industrial-200">
                     <tr>
-                      <th className="px-6 py-3">Email</th>
+                      <th className="px-6 py-3">User</th>
                       <th className="px-6 py-3">Role</th>
                       <th className="px-6 py-3">Joined Date</th>
                     </tr>
@@ -175,7 +205,12 @@ export default function Users() {
                   <tbody className="divide-y divide-industrial-100">
                     {users.map((u) => (
                       <tr key={u.id} className="hover:bg-industrial-50 transition-colors">
-                        <td className="px-6 py-4 font-medium text-industrial-900">{u.email}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-industrial-900">{u.first_name} {u.last_name}</span>
+                            <span className="text-xs text-industrial-500">{u.email}</span>
+                          </div>
+                        </td>
                         <td className="px-6 py-4">
                           <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium border ${
                             u.role === 'super-admin' ? 'bg-purple-100 text-purple-800 border-purple-200' :

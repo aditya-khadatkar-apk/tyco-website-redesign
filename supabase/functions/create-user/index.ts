@@ -23,10 +23,10 @@ serve(async (req: Request) => {
       throw new Error('SENDGRID_API_KEY is not set');
     }
 
-    const { email, role } = await req.json();
+    const { email, role, firstName, lastName } = await req.json();
 
-    if (!email || !role) {
-      throw new Error('Email and role are required');
+    if (!email || !role || !firstName || !lastName) {
+      throw new Error('Email, role, first name, and last name are required');
     }
 
     // Initialize Supabase clients
@@ -59,33 +59,34 @@ serve(async (req: Request) => {
       throw new Error('Forbidden: Only super-admins can create users');
     }
 
-    // 2. Admin Client to create the user
+    // Fetch sender details from settings table
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+    const { data: settings } = await supabaseAdmin
+      .from('settings')
+      .select('key, value')
+      .in('key', ['sender_email', 'sender_name']);
+
+    const settingsMap = Object.fromEntries(settings?.map(s => [s.key, s.value]) || []);
+    const fromEmail = settingsMap.sender_email || Deno.env.get('SENDER_EMAIL') || 'adityakhadatkar.apk@gmail.com';
+    const fromName = settingsMap.sender_name || 'Tyco India Admin';
 
     // Generate random temporary password
     const tempPassword = Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10).toUpperCase() + '1!';
 
-    // Create user
+    // Create user with metadata for the trigger to pick up
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password: tempPassword,
       email_confirm: true,
+      user_metadata: {
+        role: role,
+        first_name: firstName,
+        last_name: lastName,
+        must_change_password: true
+      }
     });
 
     if (createError) throw createError;
-
-    // Update their role (wait 1 second to ensure trigger finished creating the profile)
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    const { error: updateError } = await supabaseAdmin
-      .from('profiles')
-      .update({ 
-        role,
-        must_change_password: true 
-      })
-      .eq('id', newUser.user.id);
-
-    if (updateError) throw updateError;
 
     // Send welcome email via SendGrid
     const sgResponse = await fetch('https://api.sendgrid.com/v3/mail/send', {
@@ -97,8 +98,8 @@ serve(async (req: Request) => {
       body: JSON.stringify({
         personalizations: [{ to: [{ email }] }],
         from: {
-          email: 'adityakhadatkar.apk@gmail.com',
-          name: 'Tyco India Admin',
+          email: fromEmail,
+          name: fromName,
         },
         subject: 'Welcome to the Tyco India Admin Portal',
         content: [
@@ -106,7 +107,7 @@ serve(async (req: Request) => {
             type: 'text/html',
             value: `
               <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2>Welcome to Tyco India</h2>
+                <h2>Welcome, ${firstName}!</h2>
                 <p>An administrator has created an account for you in the Tyco India Admin Portal.</p>
                 <p>Your login credentials are:</p>
                 <div style="background-color: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
@@ -114,7 +115,7 @@ serve(async (req: Request) => {
                   <strong>Temporary Password:</strong> ${tempPassword}
                 </div>
                 <p>Please log in and change your password immediately.</p>
-                <p><a href="https://your-domain.com/admin/login" style="color: #2563eb;">Log in to the Admin Portal</a></p>
+                <p><a href="${req.headers.get('origin') || 'https://tyco-india.com'}/admin/login" style="color: #2563eb;">Log in to the Admin Portal</a></p>
               </div>
             `,
           },

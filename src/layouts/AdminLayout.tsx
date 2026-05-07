@@ -4,7 +4,7 @@ import { LogOut, LayoutDashboard, FileText, Box, Settings, Users as UsersIcon, L
 import ThemeToggle from '../components/ThemeToggle';
 
 export default function AdminLayout() {
-  const { signOut, user, role } = useAuth();
+  const { signOut, user, role, firstName, lastName } = useAuth();
   const location = useLocation();
 
   const navItems = [
@@ -12,8 +12,7 @@ export default function AdminLayout() {
     { name: 'Pages CMS', path: '/admin/pages', icon: FileText, roles: ['super-admin', 'admin'] },
     { name: 'Products', path: '/admin/products', icon: Box, roles: ['super-admin', 'admin', 'user'] },
     { name: 'Users', path: '/admin/users', icon: UsersIcon, roles: ['super-admin', 'admin'] },
-    { name: 'Settings', path: '/admin/settings', icon: Settings, roles: ['super-admin', 'admin'] },
-    { name: 'Change Password', path: '/admin/change-password', icon: Lock, roles: ['super-admin', 'admin', 'user'] },
+    { name: 'Settings', path: '/admin/settings', icon: Settings, roles: ['super-admin', 'admin', 'user'] },
   ];
 
   const filteredNavItems = navItems.filter(item => !item.roles || item.roles.includes(role || ''));
@@ -29,14 +28,6 @@ export default function AdminLayout() {
         </div>
         
         <div className="p-4">
-          <div className="mb-6 px-2 text-sm text-industrial-400">
-            <p className="truncate">Logged in as:</p>
-            <p className="font-medium text-white truncate">{user?.email}</p>
-            <span className="inline-block mt-1 px-2 py-0.5 bg-primary-600/20 text-primary-400 text-xs rounded border border-primary-600/30">
-              {role?.toUpperCase() || 'ADMIN'}
-            </span>
-          </div>
-
           <nav className="space-y-1">
             {filteredNavItems.map((item) => {
               const Icon = item.icon;
@@ -57,29 +48,67 @@ export default function AdminLayout() {
               );
             })}
           </nav>
-        </div>
 
-        <div className="mt-auto p-4 border-t border-industrial-800 space-y-2">
-          <div className="px-4 py-2 flex items-center justify-between bg-industrial-800/50 rounded-lg">
-            <span className="text-xs font-medium text-industrial-400">Theme</span>
-            <ThemeToggle className="scale-75" />
+          <div className="mt-8 px-2">
+            <Link 
+              to="/admin/settings" 
+              className="flex items-center px-4 py-2 text-xs font-semibold text-industrial-500 uppercase tracking-wider hover:text-primary-400 transition-colors"
+            >
+              <Lock className="h-3.5 w-3.5 mr-2" />
+              Security Settings
+            </Link>
           </div>
-          <button
-            onClick={signOut}
-            className="flex items-center w-full px-4 py-2 text-industrial-300 hover:text-white hover:bg-industrial-800 rounded-md transition-colors"
-          >
-            <LogOut className="h-5 w-5 mr-3" />
-            Sign Out
-          </button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-8 overflow-y-auto">
-        <div className="max-w-6xl mx-auto">
-          <Outlet />
-        </div>
-      </main>
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Top Header */}
+        <header className="h-16 bg-white dark:bg-industrial-900 border-b border-industrial-200 dark:border-industrial-800 flex items-center justify-between px-8 z-10 transition-colors duration-300">
+          <div className="flex items-center">
+            <span className="text-sm font-medium text-industrial-500 dark:text-industrial-400 capitalize">
+              {location.pathname.split('/').pop() || 'Dashboard'}
+            </span>
+          </div>
+
+          <div className="flex items-center space-x-6">
+            <div className="flex items-center pr-6 border-r border-industrial-200 dark:border-industrial-800">
+              <span className="text-xs font-medium text-industrial-400 mr-3">Theme</span>
+              <ThemeToggle />
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-bold text-industrial-900 dark:text-white truncate max-w-[200px]">
+                  {firstName && lastName ? `${firstName} ${lastName}` : user?.email?.split('@')[0]}
+                </p>
+                <div className="flex flex-col items-end">
+                  <p className="text-[10px] text-industrial-500 dark:text-industrial-400 truncate max-w-[150px]">
+                    {user?.email}
+                  </p>
+                  <p className="text-[10px] text-primary-600 dark:text-primary-400 font-bold uppercase tracking-wider mt-0.5">
+                    {role || 'Admin'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={signOut}
+                className="p-2 text-industrial-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                title="Sign Out"
+              >
+                <LogOut className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Content Area */}
+        <main className="flex-1 p-8 overflow-y-auto bg-industrial-50 dark:bg-industrial-950 transition-colors duration-300">
+          <div className="max-w-6xl mx-auto">
+            <Outlet />
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
