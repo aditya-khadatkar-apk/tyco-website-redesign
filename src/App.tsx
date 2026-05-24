@@ -9,6 +9,7 @@ import Products from './pages/public/Products';
 import Clients from './pages/public/Clients';
 import ContactUs from './pages/public/ContactUs';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { SiteThemeProvider } from './contexts/SiteThemeContext';
 import ProductDetails from './pages/public/ProductDetails';
 
 import Login from './pages/admin/Login';
@@ -20,13 +21,12 @@ import ProductEditor from './pages/admin/ProductEditor';
 import ChangePassword from './pages/admin/ChangePassword';
 import ForgotPassword from './pages/admin/ForgotPassword';
 import Settings from './pages/admin/Settings';
-
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         {/* Public Routes with Layout */}
-        <Route element={<ThemeProvider storageKey="public-theme"><PublicLayout /></ThemeProvider>}>
+        <Route element={<SiteThemeProvider><ThemeProvider storageKey="public-theme"><PublicLayout /></ThemeProvider></SiteThemeProvider>}>
           <Route path="/" element={<Home />} />
           <Route path="/company-profile" element={<CompanyProfile />} />
           <Route path="/products" element={<Products />} />

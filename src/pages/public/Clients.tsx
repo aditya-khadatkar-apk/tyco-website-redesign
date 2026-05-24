@@ -1,6 +1,7 @@
 import { Helmet } from 'react-helmet-async';
-import { ChevronDown, Users, Award } from 'lucide-react';
+import { Users, Award } from 'lucide-react';
 import { useCMS } from '../../hooks/useCMS';
+import { useMachineData } from '../../hooks/useMachineData';
 import { useState, useEffect, useRef } from 'react';
 import IndiaMap from '../../components/IndiaMap';
 
@@ -48,14 +49,9 @@ function AnimatedCounter({ target, suffix = '' }: { target: string; suffix?: str
 }
 
 export default function Clients() {
-  const { content, loading } = useCMS('clients');
-  const [openCategory, setOpenCategory] = useState<number | null>(0);
-
-  const toggleCategory = (index: number) => {
-    setOpenCategory(openCategory === index ? null : index);
-  };
-
-  if (loading) {
+  const { content, loading: cmsLoading } = useCMS('clients');
+  const { aggregates, getStateMachineBreakdown, getTopClients, loading: machinesLoading } = useMachineData();
+  if (cmsLoading || machinesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
@@ -165,73 +161,16 @@ export default function Clients() {
             </p>
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-10">
+          <div className="flex justify-center">
             {/* India Map */}
-            <div className="lg:w-2/5">
-              <div className="bg-white rounded-2xl shadow-sm border border-industrial-200 p-6 md:p-8 sticky top-24">
+            <div className="w-full max-w-4xl">
+              <div className="bg-white rounded-2xl shadow-sm border border-industrial-200 p-6 md:p-10">
                 <IndiaMap
-                  statePresence={content.state_presence || {}}
-                  title="Our Footprint"
+                  title="Our Presence in India"
+                  aggregates={aggregates}
+                  getBreakdown={getStateMachineBreakdown}
+                  getTopClients={getTopClients}
                 />
-              </div>
-            </div>
-
-            {/* Client Directory Accordion */}
-            <div className="lg:w-3/5">
-              <div className="space-y-3">
-                {(content.categories || []).map((category: any, index: number) => {
-                  const isOpen = openCategory === index;
-                  const clientList = typeof category.clients === 'string'
-                    ? category.clients.split('\n').filter((c: string) => c.trim())
-                    : (category.clients || []);
-
-                  return (
-                    <div
-                      key={index}
-                      className={`bg-white rounded-xl border transition-all duration-300 ${isOpen ? 'border-primary-200 shadow-md' : 'border-industrial-200 shadow-sm hover:shadow-md'
-                        }`}
-                    >
-                      {/* Accordion Header */}
-                      <button
-                        onClick={() => toggleCategory(index)}
-                        className="w-full flex items-center justify-between px-5 md:px-6 py-4 md:py-5 text-left group"
-                      >
-                        <div className="flex items-center">
-                          <div className={`w-2 h-2 rounded-full mr-3 transition-colors ${isOpen ? 'bg-primary-500' : 'bg-industrial-300'}`}></div>
-                          <h3 className={`font-semibold text-base md:text-lg transition-colors ${isOpen ? 'text-primary-700' : 'text-industrial-800 group-hover:text-primary-600'}`}>
-                            {category.name}
-                          </h3>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs font-medium text-industrial-400 bg-industrial-100 px-2.5 py-1 rounded-full">
-                            {clientList.length} clients
-                          </span>
-                          <ChevronDown
-                            className={`h-5 w-5 text-industrial-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-primary-500' : ''}`}
-                          />
-                        </div>
-                      </button>
-
-                      {/* Accordion Body */}
-                      {isOpen && (
-                        <div className="px-5 md:px-6 pb-5 md:pb-6 animate-in slide-in-from-top-2 fade-in duration-300">
-                          <div className="border-t border-industrial-100 pt-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
-                              {clientList.map((client: string, cIdx: number) => (
-                                <div key={cIdx} className="flex items-start py-1.5 group/item">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-primary-400 mt-2 mr-2.5 flex-shrink-0 opacity-60 group-hover/item:opacity-100 transition-opacity"></div>
-                                  <span className="text-sm text-industrial-600 group-hover/item:text-industrial-900 transition-colors">
-                                    {client.trim()}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
               </div>
             </div>
           </div>

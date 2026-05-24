@@ -15,7 +15,7 @@ export default function ForgotPassword() {
     setMessage(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke('forgot-password', {
+      const { error } = await supabase.functions.invoke('forgot-password', {
         body: { email },
       });
 

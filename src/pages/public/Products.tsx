@@ -35,6 +35,21 @@ export default function Products() {
     }
 
     fetchProducts();
+
+    const channel = supabase.channel('public:products')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'products' },
+        (payload) => {
+          console.log('[Products Realtime] Data updated:', payload);
+          fetchProducts(); // Refetch products list
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return (

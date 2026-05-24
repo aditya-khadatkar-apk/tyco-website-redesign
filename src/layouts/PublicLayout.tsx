@@ -4,7 +4,13 @@ import Footer from '../components/Footer';
 
 export default function PublicLayout() {
   return (
-    <div className="min-h-screen flex flex-col bg-industrial-100 font-sans text-industrial-900">
+    <div
+      className="min-h-screen flex flex-col font-sans transition-colors duration-300"
+      style={{
+        backgroundColor: 'var(--st-bg, #f1f5f9)',
+        color:           'var(--st-text, #0f172a)',
+      }}
+    >
       <Navbar />
       <main className="flex-grow">
         <Outlet />

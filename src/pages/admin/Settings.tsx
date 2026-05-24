@@ -14,11 +14,15 @@ import {
   ShieldAlert,
   Mail,
   User,
-  Save
+  Save,
+  Palette,
+  Eye,
+  Check
 } from 'lucide-react';
 import ChangePasswordForm from '../../components/ChangePasswordForm';
+import { useSiteTheme as _useSiteTheme, useAdminSiteTheme, type SiteThemeSlug } from '../../contexts/SiteThemeContext';
 
-type Tab = 'security' | 'access' | 'preferences';
+type Tab = 'security' | 'access' | 'preferences' | 'appearance';
 
 interface Profile {
   id: string;
@@ -31,7 +35,10 @@ interface Profile {
 export default function Settings() {
   const { role, user: currentUser, session } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('security');
-  
+  const { siteTheme, previewTheme, startPreview, cancelPreview, applyTheme, saving: themeSaving, loaded: themeLoaded } = useAdminSiteTheme();
+  const [pendingTheme, setPendingTheme] = useState<SiteThemeSlug | null>(null);
+  const [themeSuccess, setThemeSuccess] = useState(false);
+
   // Access Control State
   const [users, setUsers] = useState<Profile[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
@@ -114,14 +121,23 @@ export default function Settings() {
         throw new Error('Authentication session expired. Please log out and back in.');
       }
 
-      const { error } = await supabase.functions.invoke('revoke-session', {
-        body: { userId: targetUser.id, action },
+      // Use native fetch to bypass the automatic Authorization header added by supabase.functions.invoke
+      const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/revoke-session`;
+      
+      const response = await fetch(functionUrl, {
+        method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          'Content-Type': 'application/json',
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'x-caller-token': token
+        },
+        body: JSON.stringify({ userId: targetUser.id, action })
       });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update user status');
+      }
       
       // Update local state
       setUsers(users.map(u => u.id === targetUser.id ? { ...u, is_active: !u.is_active } : u));
@@ -161,9 +177,10 @@ export default function Settings() {
   );
 
   const tabs = [
-    { id: 'security', name: 'Account Security', icon: Lock, roles: ['user', 'admin', 'super-admin'] },
-    { id: 'access', name: 'Access Control', icon: UsersIcon, roles: ['admin', 'super-admin'] },
-    { id: 'preferences', name: 'Portal Preferences', icon: SettingsIcon, roles: ['super-admin'] },
+    { id: 'security',    name: 'Account Security',   icon: Lock,         roles: ['user', 'admin', 'super-admin'] },
+    { id: 'access',      name: 'Access Control',      icon: UsersIcon,    roles: ['admin', 'super-admin'] },
+    { id: 'preferences', name: 'Portal Preferences',  icon: SettingsIcon, roles: ['super-admin'] },
+    { id: 'appearance',  name: 'Appearance',           icon: Palette,      roles: ['super-admin'] },
   ].filter(t => t.roles.includes(role || ''));
 
   return (
@@ -411,9 +428,320 @@ export default function Settings() {
                 )}
               </div>
             )}
+            {/* Appearance — super-admin only */}
+            {activeTab === 'appearance' && (
+              <AppearanceTab
+                siteTheme={siteTheme}
+                previewTheme={previewTheme}
+                pendingTheme={pendingTheme}
+                setPendingTheme={setPendingTheme}
+                startPreview={startPreview}
+                cancelPreview={cancelPreview}
+                applyTheme={applyTheme}
+                saving={themeSaving}
+                loaded={themeLoaded}
+                themeSuccess={themeSuccess}
+                setThemeSuccess={setThemeSuccess}
+              />
+            )}
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Appearance Tab Component
+───────────────────────────────────────────────────────────── */
+const THEMES: Array<{
+  slug: SiteThemeSlug;
+  name: string;
+  description: string;
+  bg: string;
+  surface: string;
+  accent: string;
+  text: string;
+  textMuted: string;
+  badge?: string;
+}> = [
+  {
+    slug:        'default',
+    name:        'Default',
+    description: 'The original design — dark slate background with a vibrant orange accent. A bold, professional look.',
+    bg:          '#0f172a',
+    surface:     '#1e293b',
+    accent:      '#ea580c',
+    text:        '#f1f5f9',
+    textMuted:   '#94a3b8',
+  },
+  {
+    slug:        'forge',
+    name:        'Industrial Forge 🔥',
+    description: 'Deep navy dark mode with electric orange accents and glassmorphism. Premium heavy-industry brand feel.',
+    bg:          '#0a0f1e',
+    surface:     '#1a1f2e',
+    accent:      '#f97316',
+    text:        '#e2e8f0',
+    textMuted:   '#64748b',
+    badge:       'Dark',
+  },
+  {
+    slug:        'clean-pro',
+    name:        'Clean Pro ⚡',
+    description: 'Clean white base with the authentic Tyco brand orange (#EA7600). Modern, minimal, and professional.',
+    bg:          '#f9fafb',
+    surface:     '#ffffff',
+    accent:      '#EA7600',
+    text:        '#111827',
+    textMuted:   '#6b7280',
+    badge:       'Light',
+  },
+];
+
+function ThemeCard({
+  theme,
+  isActive,
+  isPreviewing,
+  isPending,
+  onPreview,
+  onSelect,
+}: {
+  theme: typeof THEMES[0];
+  isActive: boolean;
+  isPreviewing: boolean;
+  isPending: boolean;
+  onPreview: () => void;
+  onSelect: () => void;
+}) {
+  return (
+    <div
+      className={`relative rounded-2xl border-2 overflow-hidden cursor-pointer transition-all duration-200 ${
+        isPending
+          ? 'border-blue-500 ring-2 ring-blue-500/30'
+          : isActive
+          ? 'border-primary-500 ring-2 ring-primary-500/20'
+          : 'border-industrial-200 dark:border-industrial-700 hover:border-industrial-400'
+      }`}
+      onClick={onSelect}
+    >
+      {/* Mini preview */}
+      <div
+        className="h-36 p-3 flex flex-col gap-2"
+        style={{ backgroundColor: theme.bg }}
+      >
+        {/* Mini navbar */}
+        <div
+          className="flex items-center justify-between px-2 py-1 rounded-lg"
+          style={{ backgroundColor: theme.surface, border: `1px solid ${theme.accent}22` }}
+        >
+          <div className="flex gap-1">
+            <span className="text-[9px] font-bold" style={{ color: theme.text }}>TYCO</span>
+            <span className="text-[9px] font-bold" style={{ color: theme.accent }}>INDIA</span>
+          </div>
+          <div
+            className="text-[8px] px-1.5 py-0.5 rounded"
+            style={{ backgroundColor: theme.accent, color: '#fff' }}
+          >
+            CTA
+          </div>
+        </div>
+        {/* Mini hero */}
+        <div
+          className="flex-1 rounded-lg flex flex-col justify-center px-3"
+          style={{ backgroundColor: theme.surface, border: `1px solid ${theme.accent}18` }}
+        >
+          <div className="h-2 w-16 rounded mb-1" style={{ backgroundColor: theme.text, opacity: 0.9 }} />
+          <div className="h-1.5 w-24 rounded mb-2" style={{ backgroundColor: theme.textMuted, opacity: 0.6 }} />
+          <div
+            className="h-4 w-12 rounded text-[7px] flex items-center justify-center font-bold"
+            style={{ backgroundColor: theme.accent, color: '#fff' }}
+          >
+            EXPLORE
+          </div>
+        </div>
+      </div>
+
+      {/* Info row */}
+      <div className="p-3 bg-white dark:bg-industrial-900">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-sm font-bold text-industrial-900 dark:text-white truncate">
+                {theme.name}
+              </span>
+              {theme.badge && (
+                <span
+                  className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                  style={{
+                    backgroundColor: `${theme.accent}18`,
+                    color: theme.accent,
+                  }}
+                >
+                  {theme.badge}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-industrial-500 dark:text-industrial-400 leading-relaxed line-clamp-2">
+              {theme.description}
+            </p>
+          </div>
+          {isActive && !isPending && (
+            <span className="flex-shrink-0 flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-full">
+              <Check className="w-3 h-3" /> Active
+            </span>
+          )}
+          {isPending && (
+            <span className="flex-shrink-0 flex items-center gap-1 text-[10px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-full">
+              <Eye className="w-3 h-3" /> Selected
+            </span>
+          )}
+        </div>
+        <button
+          onClick={(e) => { e.stopPropagation(); onPreview(); }}
+          className="mt-2 w-full text-xs font-medium py-1.5 rounded-lg border transition-colors"
+          style={{
+            borderColor: theme.accent,
+            color: theme.accent,
+            backgroundColor: isPreviewing ? `${theme.accent}12` : 'transparent',
+          }}
+        >
+          {isPreviewing ? 'Previewing...' : 'Live Preview'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function AppearanceTab({
+  siteTheme,
+  previewTheme,
+  pendingTheme,
+  setPendingTheme,
+  startPreview,
+  cancelPreview,
+  applyTheme,
+  saving,
+  loaded,
+  themeSuccess,
+  setThemeSuccess,
+}: {
+  siteTheme: SiteThemeSlug;
+  previewTheme: SiteThemeSlug | null;
+  pendingTheme: SiteThemeSlug | null;
+  setPendingTheme: (s: SiteThemeSlug | null) => void;
+  startPreview: (s: SiteThemeSlug) => void;
+  cancelPreview: () => void;
+  applyTheme: (s: SiteThemeSlug) => Promise<void>;
+  saving: boolean;
+  loaded: boolean;
+  themeSuccess: boolean;
+  setThemeSuccess: (v: boolean) => void;
+}) {
+  const handleSelect = (slug: SiteThemeSlug) => {
+    setPendingTheme(slug === pendingTheme ? null : slug);
+  };
+
+  const handlePreview = (slug: SiteThemeSlug) => {
+    if (previewTheme === slug) {
+      cancelPreview();
+    } else {
+      startPreview(slug);
+    }
+  };
+
+  const handleApply = async () => {
+    if (!pendingTheme) return;
+    await applyTheme(pendingTheme);
+    setPendingTheme(null);
+    setThemeSuccess(true);
+    setTimeout(() => setThemeSuccess(false), 3000);
+  };
+
+  return (
+    <div>
+      <div className="mb-6">
+        <h2 className="text-xl font-bold text-industrial-900 dark:text-white flex items-center gap-2">
+          <Palette className="w-5 h-5 text-primary-600" />
+          Public Site Appearance
+        </h2>
+        <p className="text-sm text-industrial-500 dark:text-industrial-400 mt-1">
+          Choose a theme for the public-facing website. The admin portal is unaffected.
+          Use <strong>Live Preview</strong> to preview a theme on the public site before committing.
+        </p>
+      </div>
+
+      {!loaded && (
+        <div className="py-12 flex justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+        </div>
+      )}
+
+      {loaded && (
+        <>
+      {themeSuccess && (
+        <div className="mb-4 flex items-center gap-2 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 text-sm">
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+          Theme applied successfully! Visit the public site to see the change.
+        </div>
+      )}
+
+      {previewTheme && (
+        <div className="mb-4 flex items-center justify-between gap-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+          <span className="text-sm text-amber-800 dark:text-amber-400">
+            <Eye className="inline w-4 h-4 mr-1 -mt-0.5" />
+            <strong>Live Preview:</strong> You're previewing "{THEMES.find(t => t.slug === previewTheme)?.name}". Open the public site in another tab to see it.
+          </span>
+          <button
+            onClick={cancelPreview}
+            className="flex-shrink-0 text-xs font-semibold text-amber-700 dark:text-amber-400 hover:underline"
+          >
+            Stop Preview
+          </button>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
+        {THEMES.map((theme) => (
+          <ThemeCard
+            key={theme.slug}
+            theme={theme}
+            isActive={siteTheme === theme.slug}
+            isPreviewing={previewTheme === theme.slug}
+            isPending={pendingTheme === theme.slug}
+            onPreview={() => handlePreview(theme.slug)}
+            onSelect={() => handleSelect(theme.slug)}
+          />
+        ))}
+      </div>
+
+      <div className="flex items-center justify-between pt-4 border-t border-industrial-100 dark:border-industrial-800">
+        <div className="text-sm text-industrial-500 dark:text-industrial-400">
+          {pendingTheme
+            ? `Click "Apply Theme" to make ‘${THEMES.find(t => t.slug === pendingTheme)?.name}’ the live public theme.`
+            : 'Select a theme card above to apply it.'}
+        </div>
+        <div className="flex gap-3">
+          {pendingTheme && (
+            <button
+              onClick={() => { setPendingTheme(null); cancelPreview(); }}
+              className="px-4 py-2 text-sm font-medium rounded-lg border border-industrial-300 dark:border-industrial-700 text-industrial-600 dark:text-industrial-400 hover:bg-industrial-50 dark:hover:bg-industrial-800 transition-colors"
+            >
+              Cancel
+            </button>
+          )}
+          <button
+            onClick={handleApply}
+            disabled={!pendingTheme || saving || pendingTheme === siteTheme}
+            className="inline-flex items-center px-5 py-2 text-sm font-bold rounded-lg bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-600/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Check className="w-4 h-4 mr-2" />}
+            {saving ? 'Applying...' : 'Apply Theme'}
+          </button>
+        </div>
+      </div>
+      </>
+      )}
     </div>
   );
 }

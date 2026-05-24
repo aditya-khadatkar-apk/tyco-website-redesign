@@ -29,11 +29,11 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-industrial-200">
-          <h3 className="text-lg font-semibold text-industrial-900 mb-2">Product Catalog</h3>
-          <p className="text-industrial-600 text-sm mb-4">Add, edit, or remove products and specifications.</p>
-          <a href="/admin/products" className="text-primary-600 font-medium hover:text-primary-700 text-sm">Manage Products &rarr;</a>
-        </div>
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-industrial-200">
+            <h3 className="text-lg font-semibold text-industrial-900 mb-2">Product Catalog</h3>
+            <p className="text-industrial-600 text-sm mb-4">Add, edit, or remove products and specifications.</p>
+            <a href="/admin/products" className="text-primary-600 font-medium hover:text-primary-700 text-sm">Manage Products &rarr;</a>
+          </div>
 
         {(role === 'super-admin' || role === 'admin') && (
           <div className="bg-white p-6 rounded-xl shadow-sm border border-industrial-200">

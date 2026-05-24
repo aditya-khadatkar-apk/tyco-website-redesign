@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'Authorization, x-client-info, apikey, content-type, x-caller-token',
 };
 
 serve(async (req: Request) => {
@@ -27,18 +27,12 @@ serve(async (req: Request) => {
       Deno.env.get('SUPABASE_ANON_KEY')!
     );
 
-    // Verify caller's role
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) throw new Error('Missing Authorization header');
-    const token = authHeader.replace('Bearer ', '').trim();
+    // Verify caller's role using custom header to bypass gateway issues
+    const callerToken = req.headers.get('x-caller-token');
+    if (!callerToken) throw new Error('Missing authentication token');
     
-    if (!token || token === 'undefined' || token === 'null') {
-      throw new Error('Invalid or malformed Bearer token');
-    }
-    
-    const { data: { user: caller }, error: authError } = await supabaseClient.auth.getUser(token);
+    const { data: { user: caller }, error: authError } = await supabaseClient.auth.getUser(callerToken);
     if (authError || !caller) {
-      console.error('Auth Error:', authError);
       throw new Error(`Unauthorized: ${authError?.message || 'Token verification failed'}`);
     }
 
@@ -65,11 +59,16 @@ serve(async (req: Request) => {
       throw new Error('Forbidden: Insufficient permissions');
     }
 
-    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
 
     if (action === 'suspend') {
       // 1. Invalidate sessions
-      const { error: signOutError } = await supabaseAdmin.auth.admin.signOut(userId, 'global');
+      const { error: signOutError } = await supabaseAdmin.auth.admin.signOut(userId);
       if (signOutError) throw signOutError;
 
       // 2. Set is_active = false

@@ -1,7 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ─────────────────────────────────────────────────────────────
+   Tailwind Theme Tokens (keep existing industrial palette)
+───────────────────────────────────────────────────────────── */
 @theme {
   --color-industrial-50: #f8fafc;
   --color-industrial-100: #f1f5f9;
@@ -23,6 +27,112 @@
   --font-heading: 'Outfit', system-ui, -apple-system, sans-serif;
 }
 
+/* ─────────────────────────────────────────────────────────────
+   SITE THEME CSS CUSTOM PROPERTIES
+   Applied via data-theme="..." on <html> (public site only).
+   Admin layout never receives data-theme, so it's unaffected.
+───────────────────────────────────────────────────────────── */
+
+/* ── Default (current design: dark slate + orange) ─────────── */
+:root,
+[data-theme="default"] {
+  --st-bg: #f1f5f9;
+  /* page background      */
+  --st-surface: #ffffff;
+  --st-surface-2: #f8fafc;
+  --st-border: #e2e8f0;
+  --st-text: #0f172a;
+  --st-text-muted: #475569;
+  --st-primary: #ea580c;
+  --st-primary-dark: #c2410c;
+  --st-primary-rgb: 234, 88, 12;
+  --st-hero-bg: #0f172a;
+  --st-hero-text: #ffffff;
+  --st-nav-bg: rgba(255, 255, 255, 0.95);
+  --st-nav-text: #334155;
+  --st-nav-border: #e2e8f0;
+  --st-footer-bg: #0f172a;
+  --st-footer-heading: #ffffff;
+  --st-footer-text: #94a3b8;
+  --st-footer-border: rgba(255, 255, 255, 0.06);
+  --st-font-heading: 'Outfit', system-ui, sans-serif;
+  --st-font-body: 'Inter', system-ui, sans-serif;
+}
+
+/* ── Default theme — dark mode variant ─────────────────────── */
+html.dark,
+html.dark[data-theme="default"] {
+  --st-bg: #0f172a;
+  --st-surface: #1e293b;
+  --st-surface-2: #1a2332;
+  --st-border: #334155;
+  --st-text: #f1f5f9;
+  --st-text-muted: #94a3b8;
+  --st-primary: #ea580c;
+  --st-primary-dark: #c2410c;
+  --st-primary-rgb: 234, 88, 12;
+  --st-hero-bg: #0f172a;
+  --st-hero-text: #ffffff;
+  --st-nav-bg: rgba(15, 23, 42, 0.92);
+  --st-nav-text: #e2e8f0;
+  --st-nav-border: #334155;
+  --st-footer-bg: #020617;
+  --st-footer-heading: #ffffff;
+  --st-footer-text: #64748b;
+  --st-footer-border: rgba(255, 255, 255, 0.06);
+}
+
+/* ── Industrial Forge (dark navy + electric orange) ────────── */
+[data-theme="forge"] {
+  --st-bg: #0a0f1e;
+  --st-surface: #1a1f2e;
+  --st-surface-2: #141928;
+  --st-border: rgba(249, 115, 22, 0.15);
+  --st-text: #e2e8f0;
+  --st-text-muted: #94a3b8;
+  --st-primary: #f97316;
+  --st-primary-dark: #ea580c;
+  --st-primary-rgb: 249, 115, 22;
+  --st-hero-bg: #0a0f1e;
+  --st-hero-text: #ffffff;
+  --st-nav-bg: rgba(10, 15, 30, 0.75);
+  --st-nav-text: #e2e8f0;
+  --st-nav-border: rgba(249, 115, 22, 0.2);
+  --st-footer-bg: #060a14;
+  --st-footer-heading: #ffffff;
+  --st-footer-text: #64748b;
+  --st-footer-border: rgba(249, 115, 22, 0.12);
+  --st-font-heading: 'Rajdhani', system-ui, sans-serif;
+  --st-font-body: 'Inter', system-ui, sans-serif;
+}
+
+/* ── Clean Pro (white + Tyco brand orange #EA7600) ─────────── */
+[data-theme="clean-pro"] {
+  --st-bg: #f9fafb;
+  --st-surface: #ffffff;
+  --st-surface-2: #f3f4f6;
+  --st-border: #e5e7eb;
+  --st-text: #111827;
+  --st-text-muted: #6b7280;
+  --st-primary: #EA7600;
+  --st-primary-dark: #EA7600;
+  --st-primary-rgb: 234, 118, 0;
+  --st-hero-bg: #fff7ed;
+  --st-hero-text: #111827;
+  --st-nav-bg: rgba(255, 255, 255, 0.98);
+  --st-nav-text: #374151;
+  --st-nav-border: #e5e7eb;
+  --st-footer-bg: #f3f4f6;
+  --st-footer-heading: #111827;
+  --st-footer-text: #6b7280;
+  --st-footer-border: #e5e7eb;
+  --st-font-heading: 'Outfit', system-ui, sans-serif;
+  --st-font-body: 'Inter', system-ui, sans-serif;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   GLOBAL BASE STYLES (theme-aware)
+───────────────────────────────────────────────────────────── */
 @layer base {
   html {
     @apply bg-industrial-100 text-industrial-900 font-sans antialiased;
@@ -33,7 +143,12 @@
     @apply bg-industrial-950 text-industrial-100;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-heading tracking-tight font-semibold text-industrial-800;
     transition: color 0.3s ease;
   }
@@ -48,12 +163,734 @@
   }
 }
 
+/* ─────────────────────────────────────────────────────────────
+   THEME-AWARE UTILITY CLASSES
+   Use these in public components instead of hardcoded Tailwind.
+───────────────────────────────────────────────────────────── */
+.st-bg {
+  background-color: var(--st-bg);
+}
+
+.st-surface {
+  background-color: var(--st-surface);
+}
+
+.st-surface-2 {
+  background-color: var(--st-surface-2);
+}
+
+.st-border {
+  border-color: var(--st-border);
+}
+
+.st-text {
+  color: var(--st-text);
+}
+
+.st-text-muted {
+  color: var(--st-text-muted);
+}
+
+.st-primary {
+  color: var(--st-primary);
+}
+
+.st-primary-bg {
+  background-color: var(--st-primary);
+}
+
+.st-hero-bg {
+  background-color: var(--st-hero-bg);
+}
+
+.st-hero-text {
+  color: var(--st-hero-text);
+}
+
+/* Font application */
+[data-theme] h1,
+[data-theme] h2,
+[data-theme] h3,
+[data-theme] h4,
+[data-theme] h5,
+[data-theme] h6 {
+  font-family: var(--st-font-heading) !important;
+}
+
+[data-theme] body,
+[data-theme] p,
+[data-theme] span,
+[data-theme] a,
+[data-theme] li,
+[data-theme] td,
+[data-theme] th,
+[data-theme] input,
+[data-theme] textarea,
+[data-theme] select,
+[data-theme] button {
+  font-family: var(--st-font-body) !important;
+}
+
+/* ── FORGE: Full glassmorphism navbar with orange glow ──────── */
+[data-theme="forge"] nav {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: linear-gradient(to bottom,
+      rgba(10, 15, 30, 0.82),
+      rgba(10, 15, 30, 0.72)) !important;
+  border-bottom: 1px solid rgba(249, 115, 22, 0.25) !important;
+  box-shadow: 0 1px 0 rgba(249, 115, 22, 0.1),
+    0 4px 24px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Clean Pro: crisp white navbar with subtle border */
+[data-theme="clean-pro"] nav {
+  backdrop-filter: none;
+  box-shadow: 0 1px 0 #e5e7eb !important;
+}
+
+/* Forge: glowing card borders */
+[data-theme="forge"] .st-surface {
+  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.1),
+    0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Clean Pro: soft card shadows */
+[data-theme="clean-pro"] .st-surface {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* ── FORGE: Force ALL text light (no dark-on-dark camouflage) ── */
+/* Any element that might have inherent dark text must be overridden */
+[data-theme="forge"] p,
+[data-theme="forge"] span:not([class*="bg-primary"]):not([class*="text-primary"]),
+[data-theme="forge"] li,
+[data-theme="forge"] td,
+[data-theme="forge"] th,
+[data-theme="forge"] label,
+[data-theme="forge"] .text-black,
+[data-theme="forge"] .text-gray-900,
+[data-theme="forge"] .text-gray-800,
+[data-theme="forge"] .text-gray-700,
+[data-theme="forge"] .text-gray-600 {
+  color: #94a3b8 !important;
+}
+
+/* Keep heading elements bright white */
+[data-theme="forge"] h1,
+[data-theme="forge"] h2,
+[data-theme="forge"] h3,
+[data-theme="forge"] h4,
+[data-theme="forge"] h5,
+[data-theme="forge"] h6,
+[data-theme="forge"] strong {
+  color: #f1f5f9 !important;
+}
+
+/* Text on orange buttons stays white */
+[data-theme="forge"] .bg-primary-600 *,
+[data-theme="forge"] .bg-primary-700 *,
+[data-theme="forge"] a.bg-primary-600,
+[data-theme="forge"] button.bg-primary-600 {
+  color: #ffffff !important;
+}
+
+/* ── CLEAN PRO: Force ALL text dark (no white-on-white camouflage) ── */
+/* Override text-white everywhere EXCEPT on colored/dark-bg elements */
+[data-theme="clean-pro"] .text-white {
+  color: #111827 !important;
+}
+
+/* Exception: text on orange buttons stays white */
+[data-theme="clean-pro"] .bg-primary-600 *,
+[data-theme="clean-pro"] .bg-primary-700 *,
+[data-theme="clean-pro"] a.bg-primary-600,
+[data-theme="clean-pro"] button.bg-primary-600,
+[data-theme="clean-pro"] a.bg-primary-700,
+[data-theme="clean-pro"] button.bg-primary-700 {
+  color: #ffffff !important;
+}
+
+/* All general text */
+[data-theme="clean-pro"] p,
+[data-theme="clean-pro"] span,
+[data-theme="clean-pro"] li,
+[data-theme="clean-pro"] td,
+[data-theme="clean-pro"] th,
+[data-theme="clean-pro"] label {
+  color: #374151 !important;
+}
+
+/* Headings bold dark */
+[data-theme="clean-pro"] h1,
+[data-theme="clean-pro"] h2,
+[data-theme="clean-pro"] h3,
+[data-theme="clean-pro"] h4,
+[data-theme="clean-pro"] h5,
+[data-theme="clean-pro"] h6,
+[data-theme="clean-pro"] strong {
+  color: #111827 !important;
+}
+
+/* Muted text */
+[data-theme="clean-pro"] .text-industrial-600,
+[data-theme="clean-pro"] .text-industrial-500,
+[data-theme="clean-pro"] .text-gray-500,
+[data-theme="clean-pro"] .text-gray-600 {
+  color: #6b7280 !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   THEME OVERRIDES — remap existing Tailwind classes per theme
+   The public pages use hardcoded Tailwind classes; these rules
+   override them when a data-theme attribute is active on <html>.
+═══════════════════════════════════════════════════════════════ */
+
+/* ── INDUSTRIAL FORGE 🔥 ──────────────────────────────────────── */
+/* Core page backgrounds */
+[data-theme="forge"] .bg-industrial-950,
+[data-theme="forge"] .bg-industrial-900 {
+  background-color: #0a0f1e !important;
+}
+
+[data-theme="forge"] .bg-industrial-800 {
+  background-color: #0f1829 !important;
+}
+
+[data-theme="forge"] .bg-industrial-700 {
+  background-color: #172034 !important;
+}
+
+[data-theme="forge"] .bg-industrial-100,
+[data-theme="forge"] .bg-industrial-50 {
+  background-color: #141928 !important;
+}
+
+[data-theme="forge"] .bg-white {
+  background-color: #1a1f2e !important;
+}
+
+[data-theme="forge"] .bg-gray-50 {
+  background-color: #141928 !important;
+}
+
+/* Text colours */
+[data-theme="forge"] .text-industrial-900 {
+  color: #f1f5f9 !important;
+}
+
+[data-theme="forge"] .text-industrial-800 {
+  color: #e2e8f0 !important;
+}
+
+[data-theme="forge"] .text-industrial-700 {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="forge"] .text-industrial-600 {
+  color: #94a3b8 !important;
+}
+
+[data-theme="forge"] .text-industrial-500 {
+  color: #64748b !important;
+}
+
+[data-theme="forge"] .text-industrial-400 {
+  color: #475569 !important;
+}
+
+[data-theme="forge"] .text-industrial-300 {
+  color: #94a3b8 !important;
+}
+
+[data-theme="forge"] .text-white {
+  color: #ffffff !important;
+}
+
+[data-theme="forge"] .text-gray-700,
+[data-theme="forge"] .text-gray-800,
+[data-theme="forge"] .text-gray-900 {
+  color: #e2e8f0 !important;
+}
+
+/* Primary accent */
+[data-theme="forge"] .text-primary-600,
+[data-theme="forge"] .text-primary-500 {
+  color: #f97316 !important;
+}
+
+[data-theme="forge"] .bg-primary-600 {
+  background-color: #f97316 !important;
+}
+
+[data-theme="forge"] .bg-primary-600:hover,
+[data-theme="forge"] .hover\:bg-primary-500:hover {
+  background-color: #fb923c !important;
+}
+
+[data-theme="forge"] .bg-primary-700 {
+  background-color: #ea580c !important;
+}
+
+[data-theme="forge"] .border-primary-500,
+[data-theme="forge"] .border-primary-600 {
+  border-color: #f97316 !important;
+}
+
+/* Force all secondary buttons to electric orange in Forge */
+[data-theme="forge"] a.inline-flex.bg-industrial-800,
+[data-theme="forge"] a.inline-flex.bg-industrial-50 {
+  background-color: #f97316 !important;
+  color: #ffffff !important;
+  border-color: #f97316 !important;
+}
+[data-theme="forge"] a.inline-flex.bg-industrial-800:hover,
+[data-theme="forge"] a.inline-flex.bg-industrial-50:hover {
+  background-color: #fb923c !important;
+  border-color: #fb923c !important;
+}
+[data-theme="forge"] a.inline-flex.bg-industrial-800 *,
+[data-theme="forge"] a.inline-flex.bg-industrial-50 * {
+  color: #ffffff !important;
+}
+
+/* Borders */
+[data-theme="forge"] .border-industrial-100,
+[data-theme="forge"] .border-industrial-200 {
+  border-color: rgba(249, 115, 22, 0.12) !important;
+}
+
+[data-theme="forge"] .border-industrial-300 {
+  border-color: rgba(249, 115, 22, 0.2) !important;
+}
+
+[data-theme="forge"] .divide-industrial-200>*+* {
+  border-color: rgba(249, 115, 22, 0.1) !important;
+}
+
+/* Hero section */
+[data-theme="forge"] section.bg-industrial-900 {
+  background: linear-gradient(135deg, #0a0f1e 0%, #0f1a35 50%, #1a1030 100%) !important;
+}
+
+[data-theme="forge"] section.bg-industrial-900 .bg-gradient-to-r {
+  background: linear-gradient(to right, #0a0f1e, #0f1829) !important;
+}
+
+/* Cards, panels */
+[data-theme="forge"] .rounded-xl.bg-white,
+[data-theme="forge"] .rounded-2xl.bg-white,
+[data-theme="forge"] .rounded-lg.bg-white {
+  background-color: #1a1f2e !important;
+  border: 1px solid rgba(249, 115, 22, 0.1) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(249, 115, 22, 0.06) !important;
+}
+
+[data-theme="forge"] .shadow-sm,
+[data-theme="forge"] .shadow {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-theme="forge"] .shadow-lg {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(249, 115, 22, 0.08) !important;
+}
+
+/* Headings - Rajdhani font */
+[data-theme="forge"] h1,
+[data-theme="forge"] h2,
+[data-theme="forge"] h3,
+[data-theme="forge"] h4 {
+  font-family: 'Rajdhani', system-ui, sans-serif !important;
+  letter-spacing: 0.025em !important;
+  text-transform: uppercase;
+}
+
+[data-theme="forge"] h1 {
+  letter-spacing: 0.05em !important;
+}
+
+/* Stats/highlights bar */
+[data-theme="forge"] .bg-primary-700 {
+  background-color: rgba(249, 115, 22, 0.15) !important;
+}
+
+/* Prose/Rich Text overrides */
+[data-theme="forge"] .prose blockquote {
+  color: #f1f5f9 !important;
+  border-left-color: #f97316 !important;
+  background-color: rgba(249, 115, 22, 0.1) !important;
+  padding: 1rem 1.5rem !important;
+  border-radius: 0 0.5rem 0.5rem 0 !important;
+  font-style: italic;
+}
+[data-theme="forge"] .prose strong,
+[data-theme="forge"] .prose h1,
+[data-theme="forge"] .prose h2,
+[data-theme="forge"] .prose h3,
+[data-theme="forge"] .prose h4 {
+  color: #f8fafc !important;
+}
+[data-theme="forge"] .prose p,
+[data-theme="forge"] .prose li,
+[data-theme="forge"] .prose span {
+  color: #cbd5e1 !important;
+}
+[data-theme="forge"] .prose a {
+  color: #f97316 !important;
+}
+
+/* Hover interactive states */
+[data-theme="forge"] .hover\:bg-industrial-600:hover {
+  background-color: #172034 !important;
+}
+
+[data-theme="forge"] .hover\:bg-industrial-700:hover {
+  background-color: #0f1829 !important;
+}
+
+[data-theme="forge"] .hover\:text-primary-600:hover {
+  color: #f97316 !important;
+}
+
+/* Input fields */
+[data-theme="forge"] input,
+[data-theme="forge"] textarea,
+[data-theme="forge"] select {
+  background-color: #141928 !important;
+  border-color: rgba(249, 115, 22, 0.2) !important;
+  color: #e2e8f0 !important;
+}
+
+/* Accent glow on CTA button */
+[data-theme="forge"] a.bg-primary-600,
+[data-theme="forge"] button.bg-primary-600 {
+  box-shadow: 0 0 20px rgba(249, 115, 22, 0.35) !important;
+}
+
+/* ── CLEAN PRO ⚡ ─────────────────────────────────────────────── */
+/* Core page backgrounds — ALL industrial shades → light */
+[data-theme="clean-pro"] .bg-industrial-950,
+[data-theme="clean-pro"] .bg-industrial-900 {
+  background-color: #f3f4f6 !important;
+  color: #111827 !important;
+}
+
+[data-theme="clean-pro"] .bg-industrial-800 {
+  background-color: #e9eaec !important;
+}
+
+[data-theme="clean-pro"] .bg-industrial-700 {
+  background-color: #e5e7eb !important;
+}
+
+[data-theme="clean-pro"] .bg-industrial-200 {
+  background-color: #e9eaec !important;
+}
+
+[data-theme="clean-pro"] .bg-industrial-100 {
+  background-color: #f3f4f6 !important;
+}
+
+[data-theme="clean-pro"] .bg-industrial-50 {
+  background-color: #f9fafb !important;
+}
+
+[data-theme="clean-pro"] .bg-white {
+  background-color: #ffffff !important;
+}
+
+[data-theme="clean-pro"] .bg-gray-50,
+[data-theme="clean-pro"] .bg-gray-100 {
+  background-color: #f9fafb !important;
+}
+
+/* Page/section headers using bg-industrial-900 → warm cream gradient */
+[data-theme="clean-pro"] div.bg-industrial-900,
+[data-theme="clean-pro"] section.bg-industrial-900 {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffffff 60%, #fef3e2 100%) !important;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Products page "View Details" button: bg-industrial-50 + hover:bg-primary-50 */
+[data-theme="clean-pro"] a.bg-industrial-50,
+[data-theme="clean-pro"] button.bg-industrial-50 {
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+}
+
+[data-theme="clean-pro"] a.bg-industrial-50:hover,
+[data-theme="clean-pro"] button.bg-industrial-50:hover,
+[data-theme="clean-pro"] .hover\:bg-primary-50:hover {
+  background-color: #fff7ed !important;
+  border-color: #EA7600 !important;
+}
+
+/* bg-primary-50 tint */
+[data-theme="clean-pro"] .bg-primary-50 {
+  background-color: #fff7ed !important;
+}
+
+
+
+/* Text colours - Clean Pro (dark on light) */
+[data-theme="clean-pro"] .text-industrial-900 {
+  color: #111827 !important;
+}
+
+[data-theme="clean-pro"] .text-industrial-800 {
+  color: #1f2937 !important;
+}
+
+[data-theme="clean-pro"] .text-industrial-700 {
+  color: #374151 !important;
+}
+
+[data-theme="clean-pro"] .text-industrial-600 {
+  color: #4b5563 !important;
+}
+
+[data-theme="clean-pro"] .text-industrial-500 {
+  color: #6b7280 !important;
+}
+
+[data-theme="clean-pro"] .text-industrial-400 {
+  color: #9ca3af !important;
+}
+
+[data-theme="clean-pro"] .text-industrial-300 {
+  color: #6b7280 !important;
+}
+
+/* text-white → dark on light backgrounds */
+[data-theme="clean-pro"] .text-white {
+  color: #111827 !important;
+}
+
+[data-theme="clean-pro"] .text-gray-700,
+[data-theme="clean-pro"] .text-gray-800,
+[data-theme="clean-pro"] .text-gray-900 {
+  color: #374151 !important;
+}
+
+/* Primary accent — Tyco brand orange #EA7600 */
+[data-theme="clean-pro"] .text-primary-700 {
+  color: #EA7600 !important;
+}
+
+/* Prose/Rich Text overrides */
+[data-theme="clean-pro"] .prose blockquote {
+  color: #111827 !important;
+  border-left-color: #EA7600 !important;
+  background-color: rgba(234, 118, 0, 0.05) !important;
+  padding: 1rem 1.5rem !important;
+  border-radius: 0 0.5rem 0.5rem 0 !important;
+  font-style: italic;
+}
+[data-theme="clean-pro"] .prose strong,
+[data-theme="clean-pro"] .prose h1,
+[data-theme="clean-pro"] .prose h2,
+[data-theme="clean-pro"] .prose h3,
+[data-theme="clean-pro"] .prose h4 {
+  color: #111827 !important;
+}
+[data-theme="clean-pro"] .prose p,
+[data-theme="clean-pro"] .prose li,
+[data-theme="clean-pro"] .prose span {
+  color: #4b5563 !important;
+}
+[data-theme="clean-pro"] .prose a {
+  color: #EA7600 !important;
+}
+
+/* Primary accent — Tyco brand orange */
+[data-theme="clean-pro"] .text-primary-600,
+[data-theme="clean-pro"] .text-primary-500 {
+  color: #EA7600 !important;
+}
+
+[data-theme="clean-pro"] .bg-primary-600 {
+  background-color: #EA7600 !important;
+}
+
+[data-theme="clean-pro"] .bg-primary-600:hover,
+[data-theme="clean-pro"] .hover\:bg-primary-500:hover {
+  background-color: #EA7600 !important;
+}
+
+[data-theme="clean-pro"] .bg-primary-700 {
+  background-color: #EA7600 !important;
+}
+
+/* Force stats gradient section in Clients page to be pure Tyco Orange */
+[data-theme="clean-pro"] .from-primary-700.via-primary-600.to-primary-700 {
+  background: #EA7600 !important;
+}
+
+/* Ensure the text under AnimatedCounter is bright white on this orange background */
+[data-theme="clean-pro"] .text-primary-100\/80 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+[data-theme="clean-pro"] .border-primary-500,
+[data-theme="clean-pro"] .border-primary-600 {
+  border-color: #EA7600 !important;
+}
+
+/* Borders */
+[data-theme="clean-pro"] .border-industrial-100,
+[data-theme="clean-pro"] .border-industrial-200 {
+  border-color: #e5e7eb !important;
+}
+
+[data-theme="clean-pro"] .border-industrial-300 {
+  border-color: #d1d5db !important;
+}
+
+[data-theme="clean-pro"] .divide-industrial-200>*+* {
+  border-color: #e5e7eb !important;
+}
+
+/* ★ HERO section — Full transformation to light for Clean Pro */
+[data-theme="clean-pro"] section.bg-industrial-900 {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffffff 60%, #fef3e2 100%) !important;
+  color: #111827 !important;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+[data-theme="clean-pro"] section.bg-industrial-900 .bg-gradient-to-r {
+  background: transparent !important;
+  opacity: 0 !important;
+}
+
+/* Clients hero: kill the dark gradient overlay (from-industrial-900/95 etc.) */
+[data-theme="clean-pro"] section.bg-industrial-900 .bg-gradient-to-br,
+[data-theme="clean-pro"] section.bg-industrial-900 [class*="from-industrial-900"],
+[data-theme="clean-pro"] section.bg-industrial-900 [class*="via-industrial-900"] {
+  opacity: 0 !important;
+  background: transparent !important;
+}
+
+[data-theme="clean-pro"] section.bg-industrial-900 h1 {
+  color: #111827 !important;
+}
+
+[data-theme="clean-pro"] section.bg-industrial-900 p {
+  color: #4b5563 !important;
+}
+
+[data-theme="clean-pro"] section.bg-industrial-900 .text-industrial-300 {
+  color: #6b7280 !important;
+}
+
+/* Clients hero badge (bg-primary-600/20 border text-white) */
+[data-theme="clean-pro"] section.bg-industrial-900 .bg-primary-600\/20 {
+  background-color: rgba(234, 118, 0, 0.12) !important;
+  border-color: rgba(234, 118, 0, 0.3) !important;
+  color: #EA7600 !important;
+}
+
+[data-theme="clean-pro"] section.bg-industrial-900 .bg-primary-600\/20 * {
+  color: #EA7600 !important;
+}
+
+/* Secondary button in hero */
+[data-theme="clean-pro"] section.bg-industrial-900 .bg-industrial-700 {
+  background-color: #ffffff !important;
+  color: #EA7600 !important;
+  border: 2px solid #EA7600 !important;
+}
+
+[data-theme="clean-pro"] section.bg-industrial-900 .hover\:bg-industrial-600:hover {
+  background-color: #EA7600 !important;
+  color: #ffffff !important;
+}
+
+/* Clients CTA section (py-16 bg-industrial-900 text-center) → warm light */
+[data-theme="clean-pro"] section.bg-industrial-900.text-center {
+  background: linear-gradient(135deg, #fff7ed, #fef3e2) !important;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Cards, panels */
+[data-theme="clean-pro"] .rounded-xl.bg-white,
+[data-theme="clean-pro"] .rounded-2xl.bg-white,
+[data-theme="clean-pro"] .rounded-lg.bg-white {
+  background-color: #ffffff !important;
+  border: 1px solid #f3f4f6 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="clean-pro"] .shadow-sm {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="clean-pro"] .shadow {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="clean-pro"] .shadow-lg {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Headings - Outfit font */
+[data-theme="clean-pro"] h1,
+[data-theme="clean-pro"] h2,
+[data-theme="clean-pro"] h3,
+[data-theme="clean-pro"] h4 {
+  font-family: 'Outfit', system-ui, sans-serif !important;
+  letter-spacing: -0.02em !important;
+  text-transform: none !important;
+}
+
+/* Stats/highlights bar */
+[data-theme="clean-pro"] .bg-primary-700 {
+  background-color: #fff7ed !important;
+  color: #EA7600 !important;
+}
+
+/* Hover interactive states */
+[data-theme="clean-pro"] .hover\:bg-industrial-600:hover {
+  background-color: #e5e7eb !important;
+}
+
+[data-theme="clean-pro"] .hover\:bg-industrial-700:hover {
+  background-color: #d1d5db !important;
+}
+
+[data-theme="clean-pro"] .hover\:text-primary-600:hover {
+  color: #EA7600 !important;
+}
+
+/* Input fields */
+[data-theme="clean-pro"] input,
+[data-theme="clean-pro"] textarea,
+[data-theme="clean-pro"] select {
+  background-color: #ffffff !important;
+  border-color: #d1d5db !important;
+  color: #111827 !important;
+}
+
+[data-theme="clean-pro"] input::placeholder,
+[data-theme="clean-pro"] textarea::placeholder {
+  color: #9ca3af !important;
+}
+
+/* Smooth transition for all theme changes */
+[data-theme] * {
+  transition: background-color 0.25s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   UTILITIES
+───────────────────────────────────────────────────────────── */
 @layer utilities {
   .hide-scrollbar {
     -ms-overflow-style: none;
-    /* IE and Edge */
     scrollbar-width: none;
-    /* Firefox */
   }
 
   .hide-scrollbar::-webkit-scrollbar {
@@ -61,8 +898,9 @@
   }
 }
 
-/* ── Rich Text / Callout Box Styles ─────────────────────────── */
-/* These render on both admin editor and public-facing prose blocks */
+/* ─────────────────────────────────────────────────────────────
+   Rich Text / Callout Box Styles
+───────────────────────────────────────────────────────────── */
 .callout-box,
 .prose .callout-box,
 .prose div[data-callout] {
@@ -153,24 +991,51 @@
 .prose a:hover {
   @apply text-blue-800;
 }
-/* ── Global Dark Mode Overrides ──────────────────────────────── */
-/* Covers the whole site so individual components don't need      */
-/* dark: variants on every single element.                        */
 
-html.dark .bg-white { background-color: #1e293b !important; }
+/* ─────────────────────────────────────────────────────────────
+   Global Dark Mode Overrides (admin + default theme)
+───────────────────────────────────────────────────────────── */
+html.dark .bg-white {
+  background-color: #1e293b !important;
+}
+
 html.dark .bg-industrial-50,
-html.dark .bg-industrial-100 { background-color: #0f172a !important; }
-html.dark .bg-industrial-200 { background-color: #1e293b !important; }
+html.dark .bg-industrial-100 {
+  background-color: #0f172a !important;
+}
+
+html.dark .bg-industrial-200 {
+  background-color: #1e293b !important;
+}
 
 html.dark .border-industrial-100,
-html.dark .border-industrial-200 { border-color: #334155 !important; }
-html.dark .border-industrial-300 { border-color: #475569 !important; }
+html.dark .border-industrial-200 {
+  border-color: #334155 !important;
+}
 
-html.dark .text-industrial-900 { color: #f1f5f9 !important; }
-html.dark .text-industrial-800 { color: #e2e8f0 !important; }
-html.dark .text-industrial-700 { color: #cbd5e1 !important; }
-html.dark .text-industrial-600 { color: #94a3b8 !important; }
-html.dark .text-industrial-500 { color: #64748b !important; }
+html.dark .border-industrial-300 {
+  border-color: #475569 !important;
+}
+
+html.dark .text-industrial-900 {
+  color: #f1f5f9 !important;
+}
+
+html.dark .text-industrial-800 {
+  color: #e2e8f0 !important;
+}
+
+html.dark .text-industrial-700 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-industrial-600 {
+  color: #94a3b8 !important;
+}
+
+html.dark .text-industrial-500 {
+  color: #64748b !important;
+}
 
 html.dark input,
 html.dark textarea,
@@ -179,21 +1044,62 @@ html.dark select {
   color: #f1f5f9;
   border-color: #334155;
 }
+
 html.dark input::placeholder,
-html.dark textarea::placeholder { color: #64748b; }
+html.dark textarea::placeholder {
+  color: #64748b;
+}
 
-html.dark table { background-color: #1e293b; color: #cbd5e1; }
-html.dark td, html.dark th { border-color: #334155; }
+html.dark table {
+  background-color: #1e293b;
+  color: #cbd5e1;
+}
 
-html.dark .prose { color: #94a3b8; }
-html.dark .prose h2, html.dark .prose h3 { color: #f1f5f9; border-color: #334155; }
-html.dark .prose strong { color: #e2e8f0; }
-html.dark .prose blockquote { background-color: #1e293b; color: #94a3b8; }
+html.dark td,
+html.dark th {
+  border-color: #334155;
+}
 
-html.dark .callout-info    { background-color: #1e3a5f; color: #93c5fd; }
-html.dark .callout-success { background-color: #14532d; color: #86efac; }
-html.dark .callout-warning { background-color: #78350f; color: #fcd34d; }
-html.dark .callout-danger  { background-color: #7f1d1d; color: #fca5a5; }
+html.dark .prose {
+  color: #94a3b8;
+}
+
+html.dark .prose h2,
+html.dark .prose h3 {
+  color: #f1f5f9;
+  border-color: #334155;
+}
+
+html.dark .prose strong {
+  color: #e2e8f0;
+}
+
+html.dark .prose blockquote {
+  background-color: #1e293b;
+  color: #94a3b8;
+}
+
+html.dark .callout-info {
+  background-color: #1e3a5f;
+  color: #93c5fd;
+}
+
+html.dark .callout-success {
+  background-color: #14532d;
+  color: #86efac;
+}
+
+html.dark .callout-warning {
+  background-color: #78350f;
+  color: #fcd34d;
+}
+
+html.dark .callout-danger {
+  background-color: #7f1d1d;
+  color: #fca5a5;
+}
 
 /* Reset */
-body { margin: 0; }
+body {
+  margin: 0;
+}

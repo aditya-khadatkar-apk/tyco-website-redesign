@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { Save, Loader2, FileEdit, CheckCircle2 } from 'lucide-react';
 import RichTextEditor from '../../components/RichTextEditor';
 import ImageUpload from '../../components/ImageUpload';
+import MachineDataUpload from './MachineDataUpload';
 
 // Simple deep equality check for JSON objects
 const isEqual = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b);
@@ -116,14 +117,7 @@ const DEFAULT_CONTENT: Record<string, any> = {
       mh: true, mp: true, cg: true, or: true, jh: true, wb: true, br: true, up: true,
       rj: true, gj: true, hr: true, pb: true, dl: true, uk: true, ka: true, tn: true,
       ap: true, ts: true, kl: true, ga: true, ne: true, as: true, hp: true,
-    },
-    categories: [
-      { name: 'Steel, Iron & Metals', clients: 'Tata Sponge Iron Ltd.\nJindal Steel & Power Ltd.\nEssar Steel' },
-      { name: 'Sugar Mills', clients: 'Balrampur Chini Mills Ltd.\nDhampur Sugar Mills\nEID Parry (India) Ltd.' },
-      { name: 'Chemicals & Minerals', clients: 'ICI Limited\nFoseco India Limited\nAnirox Pigments Ltd.' },
-      { name: 'Food, Pharma & Agro', clients: 'Dabur India Ltd.\nRajdhani Flour Mills\nPepsi Foods Pvt. Ltd.' },
-      { name: 'Engineering & General', clients: 'Reliance Industries Ltd.\nIndian Aluminium Co. Ltd.\nEicher Goodearth Ltd.' },
-    ],
+    }
   }
 };
 
@@ -199,7 +193,7 @@ export default function PagesCMS() {
     // Extract only the fields for this section
     const changes: Record<string, any> = {};
     keys.forEach(key => {
-      changes[key] = content[key];
+      changes[key] = content[key] !== undefined ? JSON.parse(JSON.stringify(content[key])) : undefined;
     });
 
     try {
@@ -299,31 +293,6 @@ export default function PagesCMS() {
       const stats = prev.stats ? [...prev.stats] : [];
       stats.splice(index, 1);
       return { ...prev, stats };
-    });
-  };
-
-  // --- Clients Page: Categories ---
-  const addCategory = () => {
-    setContent((prev: any) => {
-      const categories = prev.categories ? [...prev.categories] : [];
-      return { ...prev, categories: [...categories, { name: '', clients: '' }] };
-    });
-  };
-
-  const updateCategory = (index: number, key: string, value: string) => {
-    setContent((prev: any) => {
-      const categories = prev.categories ? [...prev.categories] : [];
-      if (!categories[index]) categories[index] = {};
-      categories[index][key] = value;
-      return { ...prev, categories };
-    });
-  };
-
-  const removeCategory = (index: number) => {
-    setContent((prev: any) => {
-      const categories = prev.categories ? [...prev.categories] : [];
-      categories.splice(index, 1);
-      return { ...prev, categories };
     });
   };
 
@@ -913,43 +882,19 @@ export default function PagesCMS() {
                       </div>
                     </CMSSection>
 
-                    <CMSSection 
-                      id="client-categories" 
-                      title="Client Categories" 
-                      description="Organize clients by industry sector (Accordion format)."
-                      dirty={isSectionDirty(['categories'])}
-                      saving={activeSectionSaving === 'client-categories'}
-                      onSave={() => handleSaveSection('client-categories', ['categories'])}
-                    >
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-sm font-semibold text-industrial-700">Category List</h4>
-                        <button onClick={addCategory} className="text-primary-600 hover:text-primary-700 text-sm font-medium">+ Add Category</button>
+
+                    {/* Integrated Machine Data Upload Tool */}
+                    <div className="pt-8 mt-8 border-t border-industrial-100">
+                      <div className="mb-6">
+                        <h3 className="text-xl font-bold text-industrial-900">Machine Data Sync</h3>
+                        <p className="text-sm text-industrial-500 mt-1">
+                          Upload your Excel reports here to automatically update the India Map data on the public page.
+                        </p>
                       </div>
-                      {content.categories && content.categories.length > 0 ? (
-                        <div className="space-y-4">
-                          {content.categories.map((cat: any, index: number) => (
-                            <div key={index} className="p-4 bg-industrial-50 border border-industrial-200 rounded-lg">
-                              <div className="flex justify-between items-center mb-3">
-                                <h4 className="font-medium text-industrial-900">Category {index + 1}</h4>
-                                <button onClick={() => removeCategory(index)} className="text-red-500 hover:text-red-700 text-sm font-medium">Remove</button>
-                              </div>
-                              <div className="space-y-3">
-                                <div>
-                                  <label className="block text-xs font-semibold text-industrial-700 mb-1">Category Name</label>
-                                  <input type="text" value={cat.name || ''} onChange={(e) => updateCategory(index, 'name', e.target.value)} className="w-full px-3 py-2 border border-industrial-300 rounded-md text-sm" placeholder="e.g. Steel, Iron & Metals" />
-                                </div>
-                                <div>
-                                  <label className="block text-xs font-semibold text-industrial-700 mb-1">Client Names (one per line)</label>
-                                  <textarea value={cat.clients || ''} onChange={(e) => updateCategory(index, 'clients', e.target.value)} className="w-full px-3 py-2 border border-industrial-300 rounded-md text-sm font-mono" rows={6} placeholder={"Tata Sponge Iron Ltd.\nJindal Steel & Power Ltd.\nEssar Steel"} />
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-industrial-500">No categories. Click "+ Add Category" to organize clients by industry.</p>
-                      )}
-                    </CMSSection>
+                      <div className="bg-industrial-50/50 p-2 rounded-xl border border-industrial-200 shadow-inner">
+                        <MachineDataUpload />
+                      </div>
+                    </div>
                   </>
                 )}
 

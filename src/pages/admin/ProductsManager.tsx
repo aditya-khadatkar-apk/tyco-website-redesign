@@ -19,6 +19,21 @@ export default function ProductsManager() {
 
   useEffect(() => {
     fetchProducts();
+
+    const channel = supabase.channel('public:products-manager')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'products' },
+        (payload) => {
+          console.log('[ProductsManager Realtime] Data updated:', payload);
+          fetchProducts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchProducts = async () => {

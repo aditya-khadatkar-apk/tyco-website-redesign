@@ -37,7 +37,26 @@ export function useCMS(slug: string, initialData: any = {}) {
 
   useEffect(() => {
     fetchContent();
-  }, [fetchContent]);
+
+    // Subscribe to realtime changes for this specific page
+    const channel = supabase.channel(`public:pages:slug=${slug}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'pages', filter: `slug=eq.${slug}` },
+        (payload) => {
+          console.log(`[CMS Realtime] Page updated: ${slug}`, payload);
+          if (payload.new && (payload.new as any).content) {
+            setContent({ ...initialData, ...(payload.new as any).content });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchContent, slug]);
 
   return { content, loading };
 }

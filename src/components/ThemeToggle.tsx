@@ -7,11 +7,16 @@ export default function ThemeToggle({ className = "" }: { className?: string }) 
   return (
     <button
       onClick={toggleTheme}
-      className={`p-2 rounded-lg transition-colors flex items-center justify-center ${
-        theme === 'dark' 
-          ? 'bg-industrial-800 text-primary-400 hover:bg-industrial-700' 
-          : 'bg-industrial-100 text-industrial-600 hover:bg-industrial-200'
-      } ${className}`}
+      className={`p-2 rounded-lg transition-colors flex items-center justify-center ${className}`}
+      style={{
+        backgroundColor: theme === 'dark'
+          ? 'rgba(var(--st-primary-rgb, 234,88,12), 0.15)'
+          : 'var(--st-surface-2, #f8fafc)',
+        color: theme === 'dark'
+          ? 'var(--st-primary, #ea580c)'
+          : 'var(--st-text-muted, #475569)',
+        border: `1px solid ${theme === 'dark' ? 'rgba(var(--st-primary-rgb, 234,88,12), 0.25)' : 'var(--st-border, #e2e8f0)'}`,
+      }}
       aria-label="Toggle Theme"
     >
       {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
