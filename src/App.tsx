@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import PublicLayout from './layouts/PublicLayout';
 import AdminLayout from './layouts/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -34,7 +35,7 @@ function App() {
           <Route path="/clients" element={<Clients />} />
           <Route path="/contact-us" element={<ContactUs />} />
         </Route>
-        
+
         {/* Admin Login Routes */}
         <Route path="/admin/login" element={<Login />} />
         <Route path="/admin/forgot-password" element={<ForgotPassword />} />
@@ -54,6 +55,7 @@ function App() {
           </Route>
         </Route>
       </Routes>
+      <Analytics />
     </BrowserRouter>
   );
 }
