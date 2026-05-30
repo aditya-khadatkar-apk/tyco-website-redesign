@@ -343,7 +343,7 @@ export default function ClientDirectory({ isOpen, onClose, data }: ClientDirecto
         </div>
 
         {/* Results Table */}
-        <div className="flex-1 overflow-y-auto" ref={scrollRef}>
+        <div className="flex-1 overflow-auto" ref={scrollRef}>
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <Search className="w-12 h-12 text-industrial-200 mb-4" />
@@ -366,14 +366,14 @@ export default function ClientDirectory({ isOpen, onClose, data }: ClientDirecto
                 <thead className="bg-industrial-50 text-industrial-500 sticky top-0 z-10 border-b border-industrial-200">
                   <tr>
                     <th className="px-6 py-3 font-medium text-xs uppercase tracking-wider w-10">#</th>
-                    <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider">Client</th>
-                    <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider hidden sm:table-cell">Area</th>
-                    <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider hidden md:table-cell">State</th>
-                    <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider text-center hidden lg:table-cell">Bagging</th>
-                    <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider text-center hidden lg:table-cell">Pulv.</th>
-                    <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider text-center hidden lg:table-cell">H.Mill</th>
-                    <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider text-center hidden lg:table-cell">Air Cl.</th>
-                    <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider text-right">Total</th>
+                    <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider min-w-[150px]">Client</th>
+                    <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider min-w-[120px]">Area</th>
+                    <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider min-w-[100px]">State</th>
+                    <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider text-center min-w-[80px]">Bagging</th>
+                    <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider text-center min-w-[80px]">Pulv.</th>
+                    <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider text-center min-w-[80px]">H.Mill</th>
+                    <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider text-center min-w-[80px]">Air Cl.</th>
+                    <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider text-right min-w-[80px]">Total</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-industrial-100">
@@ -390,48 +390,40 @@ export default function ClientDirectory({ isOpen, onClose, data }: ClientDirecto
                       <td className="px-6 py-3 text-industrial-300 text-xs font-mono">{idx + 1}</td>
                       <td className="px-4 py-3">
                         <span className="font-semibold text-industrial-900">{client.client_name}</span>
-                        {/* Mobile: show area/state inline */}
-                        <div className="sm:hidden mt-0.5">
-                          {client.area && (
-                            <span className="text-xs text-industrial-400 flex items-center gap-1">
-                              <MapPin className="w-3 h-3" /> {client.area}
-                            </span>
-                          )}
-                        </div>
                       </td>
-                      <td className="px-4 py-3 text-industrial-500 hidden sm:table-cell">
+                      <td className="px-4 py-3 text-industrial-500">
                         <span className="flex items-center gap-1">
                           <MapPin className="w-3 h-3 text-industrial-300 flex-shrink-0" />
                           <span className="truncate max-w-[180px]">{client.area || '–'}</span>
                         </span>
                       </td>
-                      <td className="px-4 py-3 hidden md:table-cell">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-industrial-100 rounded text-xs font-medium text-industrial-600">
+                      <td className="px-4 py-3">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-industrial-100 rounded text-xs font-medium text-industrial-600 whitespace-nowrap">
                           {STATE_NAME_MAP[client.state_id] || client.state || '–'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-center hidden lg:table-cell">
+                      <td className="px-4 py-3 text-center">
                         {client.bagging_mc > 0 ? (
                           <span className="text-orange-600 font-semibold">{client.bagging_mc}</span>
                         ) : (
                           <span className="text-industrial-200">–</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-center hidden lg:table-cell">
+                      <td className="px-4 py-3 text-center">
                         {client.pulverisers > 0 ? (
                           <span className="text-blue-600 font-semibold">{client.pulverisers}</span>
                         ) : (
                           <span className="text-industrial-200">–</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-center hidden lg:table-cell">
+                      <td className="px-4 py-3 text-center">
                         {client.hammer_mill > 0 ? (
                           <span className="text-green-600 font-semibold">{client.hammer_mill}</span>
                         ) : (
                           <span className="text-industrial-200">–</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-center hidden lg:table-cell">
+                      <td className="px-4 py-3 text-center">
                         {client.air_classifiers > 0 ? (
                           <span className="text-purple-600 font-semibold">{client.air_classifiers}</span>
                         ) : (

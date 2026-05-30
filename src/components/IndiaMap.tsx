@@ -244,19 +244,21 @@ export default function IndiaMap({ title, aggregates, getBreakdown, getTopClient
           
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-industrial-100 flex justify-between items-center bg-industrial-50">
-              <div className="flex items-center">
-                <MapPin className="h-6 w-6 text-primary-600 mr-2" />
-                <h2 className="text-xl font-heading font-bold text-industrial-900">
-                  {selectedState.name}
-                </h2>
-                <span className="ml-4 px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-semibold">
+            <div className="px-4 md:px-6 py-4 border-b border-industrial-100 flex justify-between items-start md:items-center bg-industrial-50">
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                <div className="flex items-center">
+                  <MapPin className="h-5 w-5 md:h-6 md:w-6 text-primary-600 mr-2 flex-shrink-0" />
+                  <h2 className="text-lg md:text-xl font-heading font-bold text-industrial-900 leading-tight">
+                    {selectedState.name}
+                  </h2>
+                </div>
+                <span className="inline-flex w-fit items-center px-2.5 py-1 bg-primary-100 text-primary-700 rounded-full text-xs md:text-sm font-semibold">
                   {breakdown.total.toLocaleString()} Total Machines
                 </span>
               </div>
               <button 
                 onClick={() => setSelectedState(null)}
-                className="p-2 text-industrial-400 hover:text-industrial-600 hover:bg-industrial-200 rounded-full transition-colors"
+                className="p-2 -mr-2 -mt-1 md:m-0 text-industrial-400 hover:text-industrial-600 hover:bg-industrial-200 rounded-full transition-colors flex-shrink-0"
               >
                 <X className="h-5 w-5" />
               </button>
