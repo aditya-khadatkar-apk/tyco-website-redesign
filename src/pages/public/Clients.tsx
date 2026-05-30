@@ -1,9 +1,10 @@
 import { Helmet } from 'react-helmet-async';
-import { Users, Award } from 'lucide-react';
+import { Users, Award, Search } from 'lucide-react';
 import { useCMS } from '../../hooks/useCMS';
 import { useMachineData } from '../../hooks/useMachineData';
 import { useState, useEffect, useRef } from 'react';
 import IndiaMap from '../../components/IndiaMap';
+import ClientDirectory from '../../components/ClientDirectory';
 
 // Animated counter component
 function AnimatedCounter({ target, suffix = '' }: { target: string; suffix?: string }) {
@@ -50,7 +51,8 @@ function AnimatedCounter({ target, suffix = '' }: { target: string; suffix?: str
 
 export default function Clients() {
   const { content, loading: cmsLoading } = useCMS('clients');
-  const { aggregates, getStateMachineBreakdown, getTopClients, loading: machinesLoading } = useMachineData();
+  const { data: machineData, aggregates, getStateMachineBreakdown, getTopClients, loading: machinesLoading } = useMachineData();
+  const [directoryOpen, setDirectoryOpen] = useState(false);
   if (cmsLoading || machinesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -172,6 +174,32 @@ export default function Clients() {
                   getTopClients={getTopClients}
                 />
               </div>
+
+              {/* CTA to open Client Directory */}
+              <div className="mt-8 text-center">
+                <div className="bg-white rounded-2xl shadow-sm border border-industrial-200 p-8 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary-50/40 via-transparent to-primary-50/40" />
+                  <div className="relative z-10">
+                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary-100 mb-4">
+                      <Search className="w-7 h-7 text-primary-600" />
+                    </div>
+                    <h3 className="text-xl font-heading font-bold text-industrial-900 mb-2">
+                      Explore Our Client Database
+                    </h3>
+                    <p className="text-industrial-500 text-sm max-w-lg mx-auto mb-6">
+                      Search and filter through our complete machine installation database.
+                      Find clients by name, area, state, or machine type.
+                    </p>
+                    <button
+                      onClick={() => setDirectoryOpen(true)}
+                      className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl font-bold text-sm shadow-lg shadow-primary-600/20 transition-all hover:shadow-primary-600/30 hover:-translate-y-0.5 active:translate-y-0"
+                    >
+                      <Search className="w-4 h-4" />
+                      Open Client Directory
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -194,6 +222,13 @@ export default function Clients() {
           </a>
         </div>
       </section>
+
+      {/* Client Directory Modal */}
+      <ClientDirectory
+        isOpen={directoryOpen}
+        onClose={() => setDirectoryOpen(false)}
+        data={machineData}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '../../lib/supabase';
+import { supaCache } from '../../lib/supaCache';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
   Lock, 
@@ -17,12 +18,13 @@ import {
   Save,
   Palette,
   Eye,
-  Check
+  Check,
+  Database
 } from 'lucide-react';
 import ChangePasswordForm from '../../components/ChangePasswordForm';
 import { useSiteTheme as _useSiteTheme, useAdminSiteTheme, type SiteThemeSlug } from '../../contexts/SiteThemeContext';
 
-type Tab = 'security' | 'access' | 'preferences' | 'appearance';
+type Tab = 'security' | 'access' | 'preferences' | 'appearance' | 'cache';
 
 interface Profile {
   id: string;
@@ -181,6 +183,7 @@ export default function Settings() {
     { id: 'access',      name: 'Access Control',      icon: UsersIcon,    roles: ['admin', 'super-admin'] },
     { id: 'preferences', name: 'Portal Preferences',  icon: SettingsIcon, roles: ['super-admin'] },
     { id: 'appearance',  name: 'Appearance',           icon: Palette,      roles: ['super-admin'] },
+    { id: 'cache',       name: 'Cache Performance',    icon: Database,     roles: ['super-admin'] },
   ].filter(t => t.roles.includes(role || ''));
 
   return (
@@ -443,6 +446,10 @@ export default function Settings() {
                 themeSuccess={themeSuccess}
                 setThemeSuccess={setThemeSuccess}
               />
+            )}
+            {/* Cache Performance — super-admin only */}
+            {activeTab === 'cache' && (
+              <CacheTab />
             )}
           </div>
         </div>
@@ -742,6 +749,183 @@ function AppearanceTab({
       </div>
       </>
       )}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Cache Performance Tab Component (super-admin only)
+───────────────────────────────────────────────────────────── */
+function CacheTab() {
+  const [ttlConfig, setTtlConfig] = useState({ cms: 15, products: 10, machines: 5 });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const { data, error } = await supabase
+          .from('settings')
+          .select('value')
+          .eq('key', 'cache_ttl_config')
+          .maybeSingle();
+
+        if (!error && data?.value) {
+          const parsed = typeof data.value === 'string' ? JSON.parse(data.value) : data.value;
+          setTtlConfig({
+            cms: parsed.cms || 15,
+            products: parsed.products || 10,
+            machines: parsed.machines || 5,
+          });
+        }
+      } catch {
+        // Use defaults
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setMessage(null);
+
+    try {
+      const { error } = await supabase.from('settings').upsert({
+        key: 'cache_ttl_config',
+        value: ttlConfig,
+        updated_at: new Date().toISOString(),
+      });
+
+      if (error) throw error;
+
+      // Update the running cache instance with new TTLs
+      supaCache.updateTTLs({
+        cms: ttlConfig.cms * 60 * 1000,
+        products: ttlConfig.products * 60 * 1000,
+        machines: ttlConfig.machines * 60 * 1000,
+      });
+
+      setMessage({ type: 'success', text: 'Cache TTL settings saved. Changes take effect immediately for new requests.' });
+      setTimeout(() => setMessage(null), 4000);
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message || 'Failed to save cache settings.' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleClearAll = () => {
+    supaCache.invalidatePrefix('cms:');
+    supaCache.invalidatePrefix('products:');
+    supaCache.invalidatePrefix('machines:');
+    try {
+      // Clear all tyco cache keys from sessionStorage
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key?.startsWith('tyco:cache:')) keysToRemove.push(key);
+      }
+      keysToRemove.forEach(k => sessionStorage.removeItem(k));
+    } catch { /* no-op */ }
+    setMessage({ type: 'success', text: 'All cached data has been cleared. Pages will fetch fresh data on next visit.' });
+    setTimeout(() => setMessage(null), 4000);
+  };
+
+  const sources = [
+    { key: 'cms' as const, label: 'CMS Pages', desc: 'Home, Company Profile, Clients, Contact Us', icon: '📄' },
+    { key: 'products' as const, label: 'Products', desc: 'Product catalog list and detail pages', icon: '📦' },
+    { key: 'machines' as const, label: 'Machine Data', desc: 'Client machine data and map aggregates', icon: '⚙️' },
+  ];
+
+  if (loading) {
+    return (
+      <div className="py-16 flex justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto">
+      <div className="mb-6">
+        <h2 className="text-xl font-bold text-industrial-900 dark:text-white flex items-center gap-2">
+          <Database className="w-5 h-5 text-primary-600" />
+          Cache Performance
+        </h2>
+        <p className="text-sm text-industrial-500 dark:text-industrial-400 mt-1">
+          Configure how long public page data is cached before refreshing from the database.
+          Lower values mean fresher data but more database queries.
+        </p>
+      </div>
+
+      {message && (
+        <div className={`mb-6 p-4 rounded-lg flex items-start text-sm ${
+          message.type === 'error'
+            ? 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800'
+            : 'bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
+        }`}>
+          {message.type === 'error' ? <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0" /> : <CheckCircle2 className="w-5 h-5 mr-3 flex-shrink-0" />}
+          <span>{message.text}</span>
+        </div>
+      )}
+
+      <form onSubmit={handleSave} className="space-y-6">
+        {sources.map(({ key, label, desc, icon }) => (
+          <div key={key} className="p-5 bg-industrial-50 dark:bg-industrial-800 rounded-xl border border-industrial-200 dark:border-industrial-700">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg">{icon}</span>
+                  <h4 className="font-bold text-industrial-900 dark:text-white">{label}</h4>
+                </div>
+                <p className="text-xs text-industrial-500 dark:text-industrial-400">{desc}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min={1}
+                  max={60}
+                  value={ttlConfig[key]}
+                  onChange={e => setTtlConfig(prev => ({ ...prev, [key]: Math.max(1, Math.min(60, parseInt(e.target.value) || 1)) }))}
+                  className="w-20 px-3 py-2 text-center bg-white dark:bg-industrial-900 border border-industrial-300 dark:border-industrial-600 rounded-lg text-sm font-bold text-industrial-900 dark:text-white outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                />
+                <span className="text-sm text-industrial-500 dark:text-industrial-400 font-medium">min</span>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 rounded-xl p-4 flex gap-3">
+          <ShieldAlert className="w-5 h-5 text-amber-600 flex-shrink-0" />
+          <div className="text-xs text-amber-800 dark:text-amber-400 space-y-1">
+            <p className="font-bold">How Caching Works:</p>
+            <p>Data is cached in the browser. When an admin makes changes, Supabase Realtime automatically invalidates the relevant cache, so visitors see updates within seconds regardless of TTL.</p>
+            <p>TTL primarily affects how often data is re-fetched during <strong>normal browsing</strong> when no admin changes are occurring.</p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between pt-4 border-t border-industrial-100 dark:border-industrial-800">
+          <button
+            type="button"
+            onClick={handleClearAll}
+            className="text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+          >
+            Clear All Cache Now
+          </button>
+          <button
+            type="submit"
+            disabled={saving}
+            className="inline-flex items-center bg-primary-600 hover:bg-primary-700 text-white px-6 py-2.5 rounded-lg font-bold shadow-lg shadow-primary-600/20 transition-all disabled:opacity-70"
+          >
+            {saving ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Save className="w-5 h-5 mr-2" />}
+            {saving ? 'Saving...' : 'Save TTL Settings'}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

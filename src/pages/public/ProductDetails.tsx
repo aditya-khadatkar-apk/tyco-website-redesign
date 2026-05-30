@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '../../lib/supabase';
-import { ArrowLeft, Box, CheckCircle2, MessageSquare, Download, Share2 } from 'lucide-react';
+import { supaCache } from '../../lib/supaCache';
+import { ArrowLeft, Box, CheckCircle2, MessageSquare, Download, Share2, ZoomIn } from 'lucide-react';
+import ImageLightbox from '../../components/ImageLightbox';
 
 interface Product {
   id: string;
@@ -18,20 +20,31 @@ interface Product {
 
 export default function ProductDetails() {
   const { slug } = useParams<{ slug: string }>();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Serve cached product instantly if available
+  const cacheKey = `products:detail:${slug}`;
+  const cached = supaCache.getCached<Product>(cacheKey);
+  const [product, setProduct] = useState<Product | null>(cached || null);
+  const [loading, setLoading] = useState(!cached);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   useEffect(() => {
     async function fetchProduct() {
       try {
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .eq('slug', slug)
-          .single();
+        const { data: result } = await supaCache.get(
+          cacheKey,
+          async () => {
+            const { data, error } = await supabase
+              .from('products')
+              .select('*')
+              .eq('slug', slug)
+              .single();
 
-        if (error) throw error;
-        setProduct(data);
+            if (error) throw error;
+            return data as Product;
+          }
+        );
+
+        setProduct(result);
       } catch (error) {
         console.error('Error fetching product:', error);
       } finally {
@@ -47,8 +60,13 @@ export default function ProductDetails() {
         { event: '*', schema: 'public', table: 'products', filter: `slug=eq.${slug}` },
         (payload) => {
           console.log(`[Product Realtime] Data updated for ${slug}:`, payload);
+          // Invalidate this product's cache and the list page
+          supaCache.invalidate(cacheKey);
+          supaCache.invalidate('products:list');
           if (payload.new) {
-            setProduct(payload.new as Product);
+            const updated = payload.new as Product;
+            setProduct(updated);
+            supaCache.set(cacheKey, updated);
           }
         }
       )
@@ -57,7 +75,7 @@ export default function ProductDetails() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [slug]);
+  }, [slug, cacheKey]);
 
   if (loading) {
     return (
@@ -105,17 +123,35 @@ export default function ProductDetails() {
             <div className="bg-white rounded-xl border border-industrial-200 overflow-hidden relative group shadow-sm">
               <div className="aspect-[4/3] relative">
                 {product.image_url ? (
-                  <img 
-                    src={product.image_url} 
-                    alt={product.name} 
-                    className="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-500"
-                  />
+                  <div
+                    className="w-full h-full cursor-zoom-in relative"
+                    onClick={() => setLightboxOpen(true)}
+                  >
+                    <img 
+                      src={product.image_url} 
+                      alt={product.name} 
+                      className="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-500"
+                    />
+                    {/* Zoom hint overlay */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 flex items-center justify-center">
+                      <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-100 scale-90">
+                        <div className="bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg border border-industrial-200">
+                          <ZoomIn className="w-5 h-5 text-industrial-600" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 ) : (
                   <div className="flex items-center justify-center h-full w-full bg-industrial-50">
                     <Box className="w-20 h-20 text-industrial-200" />
                   </div>
                 )}
               </div>
+              {product.image_url && (
+                <div className="text-center py-2 bg-industrial-50/50 border-t border-industrial-100">
+                  <span className="text-[11px] text-industrial-400 font-medium">Click image to zoom</span>
+                </div>
+              )}
             </div>
             
             <div className="flex flex-col sm:flex-row gap-3">
@@ -196,6 +232,16 @@ export default function ProductDetails() {
           </div>
         </div>
       </div>
+
+      {/* Image Lightbox with zoom */}
+      {product.image_url && (
+        <ImageLightbox
+          src={product.image_url}
+          alt={product.name}
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+        />
+      )}
     </div>
   );
 }

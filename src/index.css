@@ -1103,3 +1103,50 @@ html.dark .callout-danger {
 body {
   margin: 0;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   INFINITE SCROLL — row entrance animation
+───────────────────────────────────────────────────────────── */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   IMAGE LIGHTBOX — open/close animations
+───────────────────────────────────────────────────────────── */
+@keyframes lightboxIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes lightboxOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+
+.animate-lightbox-in {
+  animation: lightboxIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-lightbox-out {
+  animation: lightboxOut 0.2s ease-in forwards;
+}

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { INDIA_STATES } from '../data/indiaMapData';
 import { X, Factory, MapPin, Trophy } from 'lucide-react';
 
@@ -9,14 +9,18 @@ interface IndiaMapProps {
     min: number;
     max: number;
     byState: Record<string, number>;
+    clientsByState: Record<string, number>;
   };
   getBreakdown?: (stateId: string) => any;
-  getTopClients?: (stateId: string, limit?: number) => any[];
+  getTopClients?: (stateId: string) => any[];
 }
 
 export default function IndiaMap({ title, aggregates, getBreakdown, getTopClients }: IndiaMapProps) {
   const [hoveredState, setHoveredState] = useState<{ id: string; name: string } | null>(null);
   const [selectedState, setSelectedState] = useState<{ id: string; name: string } | null>(null);
+  const [visibleCount, setVisibleCount] = useState(10);
+  const scrollSentinelRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Strictly use database aggregates to determine presence
   const stateData = useMemo(() => {
@@ -64,7 +68,40 @@ export default function IndiaMap({ title, aggregates, getBreakdown, getTopClient
   
   // Data for the currently selected modal
   const breakdown = selectedState && getBreakdown ? getBreakdown(selectedState.id) : null;
-  const topClients = selectedState && getTopClients ? getTopClients(selectedState.id, 10) : [];
+  const allClients = selectedState && getTopClients ? getTopClients(selectedState.id) : [];
+  const visibleClients = allClients.slice(0, visibleCount);
+  const hasMore = visibleCount < allClients.length;
+
+  // Reset visible count when selecting a new state
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [selectedState?.id]);
+
+  // IntersectionObserver for infinite scroll
+  const loadMore = useCallback(() => {
+    setVisibleCount(prev => Math.min(prev + 10, allClients.length));
+  }, [allClients.length]);
+
+  useEffect(() => {
+    const sentinel = scrollSentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          loadMore();
+        }
+      },
+      {
+        root: scrollContainerRef.current,
+        rootMargin: '100px',
+        threshold: 0,
+      }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loadMore, selectedState?.id]);
 
   return (
     <div className="flex flex-col items-center">
@@ -158,6 +195,11 @@ export default function IndiaMap({ title, aggregates, getBreakdown, getTopClient
                     <p className="text-primary-600 font-bold text-sm">
                       {stateData[hoveredState.id].count.toLocaleString()} Machines
                     </p>
+                    {aggregates?.clientsByState?.[hoveredState.id] && (
+                      <p style={{ color: 'var(--st-text-muted, #64748b)', fontSize: '0.75rem', marginTop: '2px', fontWeight: 500 }}>
+                        {aggregates.clientsByState[hoveredState.id]} {aggregates.clientsByState[hoveredState.id] === 1 ? 'Client' : 'Clients'}
+                      </p>
+                    )}
                     <span style={{ fontSize: '0.65rem', opacity: 0.8, marginTop: '4px', display: 'block' }}>
                       Click to view detailed breakdown
                     </span>
@@ -221,7 +263,7 @@ export default function IndiaMap({ title, aggregates, getBreakdown, getTopClient
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 overflow-y-auto">
+            <div className="p-6 overflow-y-auto" ref={scrollContainerRef}>
               
               {/* Machine Segregation Cards */}
               <h3 className="text-sm font-bold text-industrial-400 uppercase tracking-wider mb-4 flex items-center">
@@ -253,23 +295,36 @@ export default function IndiaMap({ title, aggregates, getBreakdown, getTopClient
               </div>
 
               {/* Top Clients Table */}
-              <h3 className="text-sm font-bold text-industrial-400 uppercase tracking-wider mb-4 flex items-center">
-                <Trophy className="h-4 w-4 mr-2" /> Top Clients
-              </h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold text-industrial-400 uppercase tracking-wider flex items-center">
+                  <Trophy className="h-4 w-4 mr-2" /> All Clients
+                </h3>
+                {allClients.length > 0 && (
+                  <span className="text-xs text-industrial-400 bg-industrial-100 px-2.5 py-1 rounded-full">
+                    Showing {Math.min(visibleCount, allClients.length)} of {allClients.length}
+                  </span>
+                )}
+              </div>
               
-              {topClients.length > 0 ? (
+              {allClients.length > 0 ? (
                 <div className="bg-white border border-industrial-200 rounded-xl overflow-hidden">
                   <table className="w-full text-left text-sm">
-                    <thead className="bg-industrial-50 text-industrial-500">
+                    <thead className="bg-industrial-50 text-industrial-500 sticky top-0 z-10">
                       <tr>
+                        <th className="px-4 py-3 font-medium">#</th>
                         <th className="px-4 py-3 font-medium">Client Name</th>
                         <th className="px-4 py-3 font-medium">Area/City</th>
                         <th className="px-4 py-3 font-medium text-right">Machines</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-industrial-100">
-                      {topClients.map((client, idx) => (
-                        <tr key={idx} className="hover:bg-industrial-50">
+                      {visibleClients.map((client, idx) => (
+                        <tr 
+                          key={`${client.client_name}-${idx}`} 
+                          className="hover:bg-industrial-50 transition-colors duration-150"
+                          style={{ animation: idx >= visibleCount - 10 && idx >= 10 ? 'fadeSlideIn 0.25s ease-out' : 'none' }}
+                        >
+                          <td className="px-4 py-3 text-industrial-300 text-xs font-mono">{idx + 1}</td>
                           <td className="px-4 py-3 font-medium text-industrial-900">{client.client_name}</td>
                           <td className="px-4 py-3 text-industrial-500">{client.area || '-'}</td>
                           <td className="px-4 py-3 font-bold text-primary-600 text-right">{client.total_machines}</td>
@@ -277,6 +332,18 @@ export default function IndiaMap({ title, aggregates, getBreakdown, getTopClient
                       ))}
                     </tbody>
                   </table>
+                  
+                  {/* Scroll sentinel for infinite loading */}
+                  <div ref={scrollSentinelRef} className="h-1" />
+                  
+                  {hasMore && (
+                    <div className="flex items-center justify-center py-3 bg-industrial-50/50 border-t border-industrial-100">
+                      <div className="flex items-center gap-2 text-xs text-industrial-400">
+                        <div className="w-4 h-4 border-2 border-primary-300 border-t-transparent rounded-full animate-spin" />
+                        <span>Scroll for more clients…</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <p className="text-industrial-500 text-sm italic">No specific client data available for this state.</p>

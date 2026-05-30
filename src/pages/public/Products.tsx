@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '../../lib/supabase';
+import { supaCache } from '../../lib/supaCache';
 import { ArrowRight, Loader2, Box } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -14,19 +15,28 @@ interface Product {
 }
 
 export default function Products() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Serve cached products instantly
+  const cached = supaCache.getCached<Product[]>('products:list');
+  const [products, setProducts] = useState<Product[]>(cached || []);
+  const [loading, setLoading] = useState(!cached);
 
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .order('created_at', { ascending: false });
+        const { data: result } = await supaCache.get(
+          'products:list',
+          async () => {
+            const { data, error } = await supabase
+              .from('products')
+              .select('*')
+              .order('created_at', { ascending: false });
 
-        if (error) throw error;
-        setProducts(data || []);
+            if (error) throw error;
+            return (data || []) as Product[];
+          }
+        );
+
+        setProducts(result);
       } catch (error) {
         console.error('Error fetching products:', error);
       } finally {
@@ -42,7 +52,11 @@ export default function Products() {
         { event: '*', schema: 'public', table: 'products' },
         (payload) => {
           console.log('[Products Realtime] Data updated:', payload);
-          fetchProducts(); // Refetch products list
+          // Invalidate all product caches (list + any cached details)
+          supaCache.invalidatePrefix('products:');
+          // Refetch the list
+          supaCache.invalidate('products:list');
+          fetchProducts();
         }
       )
       .subscribe();

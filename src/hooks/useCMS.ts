@@ -1,28 +1,37 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { supaCache } from '../lib/supaCache';
 
 export function useCMS(slug: string, initialData: any = {}) {
-  const [content, setContent] = useState<any>(initialData);
-  const [loading, setLoading] = useState(true);
+  // Try to serve cached content instantly (no loading flash)
+  const cached = supaCache.getCached<any>(`cms:${slug}`);
+  const [content, setContent] = useState<any>(
+    cached ? { ...initialData, ...cached } : initialData
+  );
+  const [loading, setLoading] = useState(!cached);
 
   const fetchContent = useCallback(async () => {
-    setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('pages')
-        .select('content')
-        .eq('slug', slug)
-        .maybeSingle();
+      const { data: result } = await supaCache.get(
+        `cms:${slug}`,
+        async () => {
+          const { data, error } = await supabase
+            .from('pages')
+            .select('content')
+            .eq('slug', slug)
+            .maybeSingle();
 
-      if (error) {
-        console.error(`[CMS] Error fetching "${slug}":`, error.message);
-      }
+          if (error) {
+            console.error(`[CMS] Error fetching "${slug}":`, error.message);
+            return null;
+          }
+          return data?.content || null;
+        }
+      );
 
-      if (data?.content) {
-        // DB values take precedence over defaults
-        setContent({ ...initialData, ...data.content });
+      if (result) {
+        setContent({ ...initialData, ...result });
       } else {
-        // No row in DB yet — use defaults
         setContent(initialData);
       }
     } catch (err) {
@@ -45,8 +54,13 @@ export function useCMS(slug: string, initialData: any = {}) {
         { event: '*', schema: 'public', table: 'pages', filter: `slug=eq.${slug}` },
         (payload) => {
           console.log(`[CMS Realtime] Page updated: ${slug}`, payload);
+          // Invalidate cache for this specific page
+          supaCache.invalidate(`cms:${slug}`);
           if (payload.new && (payload.new as any).content) {
-            setContent({ ...initialData, ...(payload.new as any).content });
+            const newContent = { ...initialData, ...(payload.new as any).content };
+            setContent(newContent);
+            // Update cache with the fresh realtime data
+            supaCache.set(`cms:${slug}`, (payload.new as any).content);
           }
         }
       )
