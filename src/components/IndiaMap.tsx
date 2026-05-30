@@ -309,16 +309,17 @@ export default function IndiaMap({ title, aggregates, getBreakdown, getTopClient
               </div>
               
               {allClients.length > 0 ? (
-                <div className="bg-white border border-industrial-200 rounded-xl overflow-hidden">
-                  <table className="w-full text-left text-sm">
-                    <thead className="bg-industrial-50 text-industrial-500 sticky top-0 z-10">
-                      <tr>
-                        <th className="px-4 py-3 font-medium">#</th>
-                        <th className="px-4 py-3 font-medium">Client Name</th>
-                        <th className="px-4 py-3 font-medium">Area/City</th>
-                        <th className="px-4 py-3 font-medium text-right">Machines</th>
-                      </tr>
-                    </thead>
+                <div className="bg-white border border-industrial-200 rounded-xl overflow-hidden flex flex-col">
+                  <div className="overflow-x-auto w-full">
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-industrial-50 text-industrial-500 sticky top-0 z-10">
+                        <tr>
+                          <th className="px-4 py-3 font-medium w-12">#</th>
+                          <th className="px-4 py-3 font-medium min-w-[160px]">Client Name</th>
+                          <th className="px-4 py-3 font-medium min-w-[120px]">Area/City</th>
+                          <th className="px-4 py-3 font-medium text-right min-w-[90px]">Machines</th>
+                        </tr>
+                      </thead>
                     <tbody className="divide-y divide-industrial-100">
                       {visibleClients.map((client, idx) => (
                         <tr 
