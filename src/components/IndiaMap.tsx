@@ -335,6 +335,7 @@ export default function IndiaMap({ title, aggregates, getBreakdown, getTopClient
                       ))}
                     </tbody>
                   </table>
+                </div>
                   
                   {/* Scroll sentinel for infinite loading */}
                   <div ref={scrollSentinelRef} className="h-1" />
